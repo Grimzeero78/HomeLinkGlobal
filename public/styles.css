@@ -515,3 +515,28 @@ html[data-theme="dark"] .badge-vac.open,html[data-theme="dark"] .pill-vac{color:
 [dir="rtl"] .pw-bar{direction:ltr}
 [dir="rtl"] input,[dir="rtl"] select,[dir="rtl"] textarea{direction:rtl;text-align:right}
 [dir="rtl"] input[type="number"],[dir="rtl"] input[type="tel"]{direction:ltr;text-align:right}
+
+/* ---------- real flag images + country & language pickers ---------- */
+.fimg{width:21px;height:15px;border-radius:2.5px;object-fit:cover;box-shadow:0 0 0 1px rgba(0,0,0,.09);flex:none;vertical-align:-2px;display:inline-block}
+.femoji{font-size:15px;line-height:1}
+.chip .fimg{width:18px;height:13px;vertical-align:-2.5px;margin-right:2px}
+.country-pick{cursor:pointer;font-family:inherit;font-size:inherit;color:var(--ink)}
+.country-pick:hover{border-color:var(--pine-accent)}
+.cprow{display:flex;align-items:center;gap:11px;width:100%;padding:10px 13px;border:0;border-bottom:1px solid var(--line);background:var(--card);cursor:pointer;font-family:inherit;font-size:inherit;text-align:left}
+.cprow:last-child{border-bottom:0}
+.cprow:hover{background:rgba(14,90,51,.05)}
+.cprow.on{background:rgba(14,90,51,.08)}
+.cprow b{font-size:13.5px;color:var(--ink)}
+.cprow small{color:var(--ink3);font-size:11.5px;font-weight:600;flex:none}
+.cprow>svg{width:17px;height:17px;color:var(--pine-accent);flex:none}
+.cprow .fimg{width:23px;height:16.5px}
+[dir="rtl"] .cprow,[dir="rtl"] .lrow{text-align:right}
+.lrow{display:flex;align-items:center;gap:10px;width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;font-family:inherit;font-size:inherit;text-align:left;margin-bottom:7px}
+.lrow:hover{border-color:var(--pine-accent)}
+.lrow.on{border-color:var(--pine-accent);background:rgba(14,90,51,.06)}
+.lrow.sug{border-color:var(--pine-accent);background:var(--mist)}
+.lrow .l-nat{font-size:14px;color:var(--ink);flex:1;min-width:0;font-weight:700}
+.lrow .l-eng{color:var(--ink3);font-size:12px;flex:none}
+.lrow .l-check{flex:none;display:inline-flex;color:var(--pine-accent)}
+.lrow .l-check svg{width:18px;height:18px}
+.lrow .mini-tag{flex:none;margin-left:2px}

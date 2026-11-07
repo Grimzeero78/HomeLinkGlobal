@@ -3,14 +3,16 @@
 // 22 languages ≈ 90% of humanity. Untranslated deep strings fall back to
 // English gracefully — the dictionary grows release by release.
 'use strict';
+// nat = the language's own name (shown big); eng = English name (shown small,
+// also matches the picker search so an English speaker can find 'Japanese').
 const LANGS = {
-  en:{ nat:'English', dir:'ltr' }, sw:{ nat:'Kiswahili', dir:'ltr' }, es:{ nat:'Español', dir:'ltr' },
-  fr:{ nat:'Français', dir:'ltr' }, pt:{ nat:'Português', dir:'ltr' }, ar:{ nat:'العربية', dir:'rtl' },
-  hi:{ nat:'हिन्दी', dir:'ltr' }, bn:{ nat:'বাংলা', dir:'ltr' }, zh:{ nat:'中文', dir:'ltr' },
-  ru:{ nat:'Русский', dir:'ltr' }, ur:{ nat:'اردو', dir:'rtl' }, id:{ nat:'Bahasa Indonesia', dir:'ltr' },
-  de:{ nat:'Deutsch', dir:'ltr' }, ja:{ nat:'日本語', dir:'ltr' }, ko:{ nat:'한국어', dir:'ltr' },
-  vi:{ nat:'Tiếng Việt', dir:'ltr' }, tr:{ nat:'Türkçe', dir:'ltr' }, it:{ nat:'Italiano', dir:'ltr' },
-  fa:{ nat:'فارسی', dir:'rtl' }, fil:{ nat:'Filipino', dir:'ltr' }, pl:{ nat:'Polski', dir:'ltr' }, nl:{ nat:'Nederlands', dir:'ltr' },
+  en:{ nat:'English', eng:'English', dir:'ltr' }, sw:{ nat:'Kiswahili', eng:'Swahili', dir:'ltr' }, es:{ nat:'Español', eng:'Spanish', dir:'ltr' },
+  fr:{ nat:'Français', eng:'French', dir:'ltr' }, pt:{ nat:'Português', eng:'Portuguese', dir:'ltr' }, ar:{ nat:'العربية', eng:'Arabic', dir:'rtl' },
+  hi:{ nat:'हिन्दी', eng:'Hindi', dir:'ltr' }, bn:{ nat:'বাংলা', eng:'Bengali', dir:'ltr' }, zh:{ nat:'中文', eng:'Chinese', dir:'ltr' },
+  ru:{ nat:'Русский', eng:'Russian', dir:'ltr' }, ur:{ nat:'اردو', eng:'Urdu', dir:'rtl' }, id:{ nat:'Bahasa Indonesia', eng:'Indonesian', dir:'ltr' },
+  de:{ nat:'Deutsch', eng:'German', dir:'ltr' }, ja:{ nat:'日本語', eng:'Japanese', dir:'ltr' }, ko:{ nat:'한국어', eng:'Korean', dir:'ltr' },
+  vi:{ nat:'Tiếng Việt', eng:'Vietnamese', dir:'ltr' }, tr:{ nat:'Türkçe', eng:'Turkish', dir:'ltr' }, it:{ nat:'Italiano', eng:'Italian', dir:'ltr' },
+  fa:{ nat:'فارسی', eng:'Persian', dir:'rtl' }, fil:{ nat:'Filipino', eng:'Filipino', dir:'ltr' }, pl:{ nat:'Polski', eng:'Polish', dir:'ltr' }, nl:{ nat:'Nederlands', eng:'Dutch', dir:'ltr' },
 };
 // English source strings — every other language translates these keys.
 const STR = {
@@ -41,7 +43,7 @@ const STR = {
   rent_d:'Rent', deposit_d:'Deposit', avail_from:'Available from', contact_l:'Contact', verified:'Verified', views:'views',
   save:'Save', cancel:'Cancel', del:'Delete', edit:'Edit', send:'Send', loading:'Loading…',
   never_pay:'Never send money before you have seen the house in person.', report_l:'Report',
-  pick_lang:'Language', lang_suggested:'Suggested for your country', lang_all:'All languages',
+  pick_lang:'Language', lang_suggested:'Suggested for your country', lang_all:'All languages', lang_search:'Search languages…'
 };
 // translations — key-per-language; missing keys fall back to English
 const I18N = {
@@ -72,7 +74,7 @@ sw:{ nav_home:'Nyumbani', nav_search:'Tafuta', nav_map:'Ramani', nav_chats:'Mazu
   rent_d:'Kodi', deposit_d:'Amani', avail_from:'Inapatikana kuanzia', contact_l:'Mawasiliano', verified:'Amethibitishwa', views:'viewi',
   save:'Hifadhi', cancel:'Ghairi', del:'Futa', edit:'Badilisha', send:'Tuma', loading:'Inapakia…',
   never_pay:'Usitume pesa kabla ya kuona nyumba mwenyewe.', report_l:'Ripoti',
-  pick_lang:'Lugha', lang_suggested:'Lugha ya nchi yako', lang_all:'Lugha zote' },
+  pick_lang:'Lugha', lang_suggested:'Lugha ya nchi yako', lang_all:'Lugha zote', lang_search:'Tafuta lugha…' },
 es:{ nav_home:'Inicio', nav_search:'Buscar', nav_map:'Mapa', nav_chats:'Chats', nav_post:'Publicar', nav_profile:'Perfil', nav_admin:'Admin',
   signin:'Iniciar sesión', signout:'Salir', create_account:'Crear cuenta',
   hero_title:'Encuentra casa en cualquier parte del mundo', hero_sub:'Habitaciones, pisos y casas familiares en todos los países — habla directo con el propietario, mira primero, paga después.', hero_ph:'Busca ciudad, zona, punto de referencia…',
@@ -100,7 +102,7 @@ es:{ nav_home:'Inicio', nav_search:'Buscar', nav_map:'Mapa', nav_chats:'Chats', 
   rent_d:'Alquiler', deposit_d:'Depósito', avail_from:'Disponible desde', contact_l:'Contacto', verified:'Verificado', views:'vistas',
   save:'Guardar', cancel:'Cancelar', del:'Eliminar', edit:'Editar', send:'Enviar', loading:'Cargando…',
   never_pay:'Nunca envíes dinero antes de ver la casa en persona.', report_l:'Reportar',
-  pick_lang:'Idioma', lang_suggested:'Sugerido para tu país', lang_all:'Todos los idiomas' },
+  pick_lang:'Idioma', lang_suggested:'Sugerido para tu país', lang_all:'Todos los idiomas', lang_search:'Buscar idiomas…' },
 fr:{ nav_home:'Accueil', nav_search:'Rechercher', nav_map:'Carte', nav_chats:'Discussions', nav_post:'Publier', nav_profile:'Profil', nav_admin:'Admin',
   signin:'Se connecter', signout:'Déconnexion', create_account:'Créer un compte',
   hero_title:'Trouvez un logement partout dans le monde', hero_sub:'Chambres, appartements et maisons familiales dans tous les pays — discutez directement avec le propriétaire, visitez d\'abord, payez après.', hero_ph:'Chercher ville, quartier, lieu…',
@@ -128,7 +130,7 @@ fr:{ nav_home:'Accueil', nav_search:'Rechercher', nav_map:'Carte', nav_chats:'Di
   rent_d:'Loyer', deposit_d:'Caution', avail_from:'Disponible dès le', contact_l:'Contact', verified:'Vérifié', views:'vues',
   save:'Enregistrer', cancel:'Annuler', del:'Supprimer', edit:'Modifier', send:'Envoyer', loading:'Chargement…',
   never_pay:'N\'envoyez jamais d\'argent avant d\'avoir vu la maison en personne.', report_l:'Signaler',
-  pick_lang:'Langue', lang_suggested:'Suggéré pour votre pays', lang_all:'Toutes les langues' },
+  pick_lang:'Langue', lang_suggested:'Suggéré pour votre pays', lang_all:'Toutes les langues', lang_search:'Rechercher une langue…' },
 pt:{ nav_home:'Início', nav_search:'Buscar', nav_map:'Mapa', nav_chats:'Conversas', nav_post:'Anunciar', nav_profile:'Perfil', nav_admin:'Admin',
   signin:'Entrar', signout:'Sair', create_account:'Criar conta',
   hero_title:'Encontre uma casa em qualquer lugar do mundo', hero_sub:'Quartos, apartamentos e casas familiares em todos os países — fale direto com o proprietário, visite primeiro, pague depois.', hero_ph:'Buscar cidade, bairro, ponto de referência…',
@@ -156,7 +158,7 @@ pt:{ nav_home:'Início', nav_search:'Buscar', nav_map:'Mapa', nav_chats:'Convers
   rent_d:'Aluguel', deposit_d:'Caução', avail_from:'Disponível a partir de', contact_l:'Contato', verified:'Verificado', views:'visualizações',
   save:'Salvar', cancel:'Cancelar', del:'Excluir', edit:'Editar', send:'Enviar', loading:'Carregando…',
   never_pay:'Nunca envie dinheiro antes de ver a casa pessoalmente.', report_l:'Denunciar',
-  pick_lang:'Idioma', lang_suggested:'Sugerido para seu país', lang_all:'Todos os idiomas' },
+  pick_lang:'Idioma', lang_suggested:'Sugerido para seu país', lang_all:'Todos os idiomas', lang_search:'Pesquisar idiomas…' },
 ar:{ nav_home:'الرئيسية', nav_search:'بحث', nav_map:'الخريطة', nav_chats:'المحادثات', nav_post:'نشر', nav_profile:'الملف', nav_admin:'الإدارة',
   signin:'تسجيل الدخول', signout:'خروج', create_account:'إنشاء حساب',
   hero_title:'اعثر على منزل في أي مكان بالعالم', hero_sub:'غرف وشقق ومنزل عائلي في كل دولة — تواصل مع المالك مباشرة، عاين أولاً، وادفع لاحقاً.', hero_ph:'ابحث عن مدينة أو منطقة أو معلم…',
@@ -184,7 +186,7 @@ ar:{ nav_home:'الرئيسية', nav_search:'بحث', nav_map:'الخريطة',
   rent_d:'الإيجار', deposit_d:'العربون', avail_from:'متاح من', contact_l:'التواصل', verified:'موثّق', views:'مشاهدات',
   save:'حفظ', cancel:'إلغاء', del:'حذف', edit:'تعديل', send:'إرسال', loading:'جارٍ التحميل…',
   never_pay:'لا ترسل أي مبلغ قبل أن ترى المنزل بنفسك.', report_l:'إبلاغ',
-  pick_lang:'اللغة', lang_suggested:'مقترحة لبلدك', lang_all:'كل اللغات' },
+  pick_lang:'اللغة', lang_suggested:'مقترحة لبلدك', lang_all:'كل اللغات', lang_search:'ابحث عن لغة…' },
 hi:{ nav_home:'होम', nav_search:'खोजें', nav_map:'नक्शा', nav_chats:'चैट', nav_post:'पोस्ट', nav_profile:'प्रोफ़ाइल', nav_admin:'एडमिन',
   signin:'साइन इन', signout:'साइन आउट', create_account:'खाता बनाएं',
   hero_title:'दुनिया में कहीं भी घर खोजें', hero_sub:'हर देश में कमरे, अपार्टमेंट और फ़ैमिली होम — मकान मालिक से सीधे बात करें, पहले देखें, बाद में भुगतान करें।', hero_ph:'शहर, इलाका, लैंडमार्क खोजें…',
@@ -212,7 +214,7 @@ hi:{ nav_home:'होम', nav_search:'खोजें', nav_map:'नक्श�
   rent_d:'किराया', deposit_d:'एडवांस', avail_from:'उपलब्ध से', contact_l:'संपर्क', verified:'सत्यापित', views:'बार देखा',
   save:'सहेजें', cancel:'रद्द', del:'हटाएं', edit:'बदलें', send:'भेजें', loading:'लोड हो रहा है…',
   never_pay:'घर खुद देखे बिना कभी पैसे न भेजें।', report_l:'रिपोर्ट',
-  pick_lang:'भाषा', lang_suggested:'आपके देश की सुझावित', lang_all:'सभी भाषाएँ' },
+  pick_lang:'भाषा', lang_suggested:'आपके देश की सुझावित', lang_all:'सभी भाषाएँ', lang_search:'भाषाएँ खोजें…' },
 bn:{ nav_home:'হোম', nav_search:'খুঁজুন', nav_map:'মানচিত্র', nav_chats:'চ্যাট', nav_post:'পোস্ট', nav_profile:'প্রোফাইল', nav_admin:'অ্যাডমিন',
   signin:'সাইন ইন', signout:'সাইন আউট', create_account:'অ্যাকাউন্ট খুলুন',
   hero_title:'পৃথিবীর যেকোনো জায়গায় বাড়ি খুঁজুন', hero_sub:'প্রতিটি দেশে রুম, অ্যাপার্টমেন্ট ও পারিবারিক বাড়ি — বাড়িওয়ালার সাথে সরাসরি কথা বলুন, আগে দেখুন, পরে দিন।', hero_ph:'শহর, এলাকা, ল্যান্ডমার্ক খুঁজুন…',
@@ -240,7 +242,7 @@ bn:{ nav_home:'হোম', nav_search:'খুঁজুন', nav_map:'মান�
   rent_d:'ভাড়া', deposit_d:'অগ্রিম', avail_from:'চালু হবে', contact_l:'যোগাযোগ', verified:'যাচাইকৃত', views:'বার দেখা',
   save:'সংরক্ষণ', cancel:'বাতিল', del:'মুছুন', edit:'পরিবর্তন', send:'পাঠান', loading:'লোড হচ্ছে…',
   never_pay:'নিজে বাড়ি না দেখে কখনো টাকা পাঠাবেন না।', report_l:'রিপোর্ট',
-  pick_lang:'ভাষা', lang_suggested:'আপনার দেশের প্রস্তাবিত', lang_all:'সব ভাষা' },
+  pick_lang:'ভাষা', lang_suggested:'আপনার দেশের প্রস্তাবিত', lang_all:'সব ভাষা', lang_search:'ভাষা খুঁজুন…' },
 zh:{ nav_home:'首页', nav_search:'搜索', nav_map:'地图', nav_chats:'聊天', nav_post:'发布', nav_profile:'我的', nav_admin:'管理',
   signin:'登录', signout:'退出', create_account:'注册账号',
   hero_title:'在世界任何地方找房', hero_sub:'每个国家的房间、公寓和家庭住宅 — 直接与房东聊天，先看房，后付款。', hero_ph:'搜索城市、区域、地标…',
@@ -268,7 +270,7 @@ zh:{ nav_home:'首页', nav_search:'搜索', nav_map:'地图', nav_chats:'聊天
   rent_d:'租金', deposit_d:'押金', avail_from:'可入住', contact_l:'联系', verified:'已认证', views:'次浏览',
   save:'保存', cancel:'取消', del:'删除', edit:'编辑', send:'发送', loading:'加载中…',
   never_pay:'亲眼看到房子之前，绝不汇款。', report_l:'举报',
-  pick_lang:'语言', lang_suggested:'为你的国家推荐', lang_all:'所有语言' },
+  pick_lang:'语言', lang_suggested:'为你的国家推荐', lang_all:'所有语言', lang_search:'搜索语言…' },
 ru:{ nav_home:'Главная', nav_search:'Поиск', nav_map:'Карта', nav_chats:'Чаты', nav_post:'Разместить', nav_profile:'Профиль', nav_admin:'Админ',
   signin:'Войти', signout:'Выйти', create_account:'Создать аккаунт',
   hero_title:'Найдите жильё в любой точке мира', hero_sub:'Комнаты, квартиры и дома для семьи в каждой стране — общайтесь с владельцем напрямую: сначала смотрите, потом платите.', hero_ph:'Город, район, ориентир…',
@@ -296,7 +298,7 @@ ru:{ nav_home:'Главная', nav_search:'Поиск', nav_map:'Карта', n
   rent_d:'Аренда', deposit_d:'Залог', avail_from:'Доступно с', contact_l:'Контакт', verified:'Проверен', views:'просмотров',
   save:'Сохранить', cancel:'Отмена', del:'Удалить', edit:'Изменить', send:'Отправить', loading:'Загрузка…',
   never_pay:'Никогда не переводите деньги, пока не увидите дом лично.', report_l:'Жалоба',
-  pick_lang:'Язык', lang_suggested:'Для вашей страны', lang_all:'Все языки' },
+  pick_lang:'Язык', lang_suggested:'Для вашей страны', lang_all:'Все языки', lang_search:'Найти язык…' },
 ur:{ nav_home:'ہوم', nav_search:'تلاش', nav_map:'نقشہ', nav_chats:'چیٹس', nav_post:'پوسٹ', nav_profile:'پروفائل', nav_admin:'ایڈمن',
   signin:'سائن اِن', signout:'سائن آؤٹ', create_account:'اکاؤنٹ بنائیں',
   hero_title:'دنیا میں کہیں بھی گھر تلاش کریں', hero_sub:'ہر ملک میں کمرے، اپارٹمنٹس اور فیملی ہوم — مالک سے براہ راست بات کریں، پہلے دیکھیں، بعد میں ادائیگی کریں۔', hero_ph:'شہر، علاقہ، نشانی تلاش کریں…',
@@ -324,7 +326,7 @@ ur:{ nav_home:'ہوم', nav_search:'تلاش', nav_map:'نقشہ', nav_chats:'چ
   rent_d:'کرایہ', deposit_l:'ایڈوانس', avail_from:'سے دستیاب', contact_l:'رابطہ', verified:'تصدیق شدہ', views:'بار دیکھا',
   save:'محفوظ', cancel:'منسوخ', del:'حذف', edit:'تبدیلی', send:'بھیجیں', loading:'لوڈ ہو رہا ہے…',
   never_pay:'گھر خود دیکھے بغیر کبھی پیسے نہ بھیجیں۔', report_l:'رپورٹ',
-  pick_lang:'زبان', lang_suggested:'آپ کے ملک کے لیے تجویز', lang_all:'تمام زبانیں' },
+  pick_lang:'زبان', lang_suggested:'آپ کے ملک کے لیے تجویز', lang_all:'تمام زبانیں', lang_search:'زبانیں تلاش کریں…' },
 id:{ nav_home:'Beranda', nav_search:'Cari', nav_map:'Peta', nav_chats:'Chat', nav_post:'Iklan', nav_profile:'Profil', nav_admin:'Admin',
   signin:'Masuk', signout:'Keluar', create_account:'Buat akun',
   hero_title:'Temukan rumah di mana saja di dunia', hero_sub:'Kamar, apartemen, dan rumah keluarga di setiap negara — ngobrol langsung dengan pemiliknya, lihat dulu, bayar nanti.', hero_ph:'Cari kota, area, patokan…',
@@ -352,7 +354,7 @@ id:{ nav_home:'Beranda', nav_search:'Cari', nav_map:'Peta', nav_chats:'Chat', na
   rent_d:'Sewa', deposit_d:'Deposit', avail_from:'Tersedia mulai', contact_l:'Kontak', verified:'Terverifikasi', views:'dilihat',
   save:'Simpan', cancel:'Batal', del:'Hapus', edit:'Ubah', send:'Kirim', loading:'Memuat…',
   never_pay:'Jangan pernah kirim uang sebelum melihat rumahnya langsung.', report_l:'Laporkan',
-  pick_lang:'Bahasa', lang_suggested:'Saran untuk negara Anda', lang_all:'Semua bahasa' },
+  pick_lang:'Bahasa', lang_suggested:'Saran untuk negara Anda', lang_all:'Semua bahasa', lang_search:'Cari bahasa…' },
 de:{ nav_home:'Start', nav_search:'Suchen', nav_map:'Karte', nav_chats:'Chats', nav_post:'Inserieren', nav_profile:'Profil', nav_admin:'Admin',
   signin:'Anmelden', signout:'Abmelden', create_account:'Konto erstellen',
   hero_title:'Finde ein Zuhause überall auf der Welt', hero_sub:'Zimmer, Wohnungen und Familienhäuser in jedem Land — sprich direkt mit dem Vermieter: erst besichtigen, dann zahlen.', hero_ph:'Stadt, Viertel, Wahrzeichen suchen…',
@@ -380,7 +382,7 @@ de:{ nav_home:'Start', nav_search:'Suchen', nav_map:'Karte', nav_chats:'Chats', 
   rent_d:'Miete', deposit_d:'Kaution', avail_from:'Verfügbar ab', contact_l:'Kontakt', verified:'Verifiziert', views:'Aufrufe',
   save:'Speichern', cancel:'Abbrechen', del:'Löschen', edit:'Bearbeiten', send:'Senden', loading:'Lädt…',
   never_pay:'Schicke nie Geld, bevor du das Haus persönlich gesehen hast.', report_l:'Melden',
-  pick_lang:'Sprache', lang_suggested:'Für dein Land vorgeschlagen', lang_all:'Alle Sprachen' },
+  pick_lang:'Sprache', lang_suggested:'Für dein Land vorgeschlagen', lang_all:'Alle Sprachen', lang_search:'Sprache suchen…' },
 ja:{ nav_home:'ホーム', nav_search:'検索', nav_map:'地図', nav_chats:'チャット', nav_post:'投稿', nav_profile:'プロフィール', nav_admin:'管理',
   signin:'ログイン', signout:'ログアウト', create_account:'アカウント作成',
   hero_title:'世界のどこでも住まいが見つかる', hero_sub:'各国の部屋・アパート・ファミリーホーム — 大家と直接チャット、内見してから支払う。', hero_ph:'都市・エリア・ランドマークを検索…',
@@ -408,7 +410,7 @@ ja:{ nav_home:'ホーム', nav_search:'検索', nav_map:'地図', nav_chats:'チ
   rent_d:'家賃', deposit_d:'敷金', avail_from:'入居可能日', contact_l:'連絡先', verified:'認証済み', views:'閲覧',
   save:'保存', cancel:'キャンセル', del:'削除', edit:'編集', send:'送信', loading:'読み込み中…',
   never_pay:'家を自分の目で見るまで、絶対にお金を送らない。', report_l:'通報',
-  pick_lang:'言語', lang_suggested:'あなたの国のおすすめ', lang_all:'すべての言語' },
+  pick_lang:'言語', lang_suggested:'あなたの国のおすすめ', lang_all:'すべての言語', lang_search:'言語を検索…' },
 ko:{ nav_home:'홈', nav_search:'검색', nav_map:'지도', nav_chats:'채팅', nav_post:'등록', nav_profile:'프로필', nav_admin:'관리',
   signin:'로그인', signout:'로그아웃', create_account:'계정 만들기',
   hero_title:'세계 어디서든 집을 찾으세요', hero_sub:'모든 나라의 원룸·아파트·가정집 — 집주인과 직접 대화, 먼저 보고 나중에 지불.', hero_ph:'도시, 지역, 랜드마크 검색…',
@@ -436,7 +438,7 @@ ko:{ nav_home:'홈', nav_search:'검색', nav_map:'지도', nav_chats:'채팅', 
   rent_d:'임대료', deposit_d:'보증금', avail_from:'입주 가능일', contact_l:'연락처', verified:'인증됨', views:'조회',
   save:'저장', cancel:'취소', del:'삭제', edit:'편집', send:'보내기', loading:'불러오는 중…',
   never_pay:'집을 직접 보기 전에는 절대 돈을 보내지 마세요.', report_l:'신고',
-  pick_lang:'언어', lang_suggested:'내 국가 추천', lang_all:'모든 언어' },
+  pick_lang:'언어', lang_suggested:'내 국가 추천', lang_all:'모든 언어', lang_search:'언어 검색…' },
 vi:{ nav_home:'Trang chủ', nav_search:'Tìm', nav_map:'Bản đồ', nav_chats:'Tin nhắn', nav_post:'Đăng tin', nav_profile:'Hồ sơ', nav_admin:'Quản trị',
   signin:'Đăng nhập', signout:'Đăng xuất', create_account:'Tạo tài khoản',
   hero_title:'Tìm nhà ở bất kỳ đâu trên thế giới', hero_sub:'Phòng, căn hộ và nhà gia đình ở mọi quốc gia — nhắn trực tiếp với chủ nhà, xem trước, trả sau.', hero_ph:'Tìm thành phố, khu vực, địa điểm…',
@@ -464,7 +466,7 @@ vi:{ nav_home:'Trang chủ', nav_search:'Tìm', nav_map:'Bản đồ', nav_chats
   rent_d:'Tiền thuê', deposit_d:'Đặt cọc', avail_from:'Có sẵn từ', contact_l:'Liên hệ', verified:'Đã xác minh', views:'lượt xem',
   save:'Lưu', cancel:'Hủy', del:'Xóa', edit:'Sửa', send:'Gửi', loading:'Đang tải…',
   never_pay:'Chưa tận mắt xem nhà thì đừng gửi tiền.', report_l:'Báo cáo',
-  pick_lang:'Ngôn ngữ', lang_suggested:'Gợi ý cho quốc gia của bạn', lang_all:'Tất cả ngôn ngữ' },
+  pick_lang:'Ngôn ngữ', lang_suggested:'Gợi ý cho quốc gia của bạn', lang_all:'Tất cả ngôn ngữ', lang_search:'Tìm ngôn ngữ…' },
 tr:{ nav_home:'Ana sayfa', nav_search:'Ara', nav_map:'Harita', nav_chats:'Sohbetler', nav_post:'İlan ver', nav_profile:'Profil', nav_admin:'Yönetim',
   signin:'Giriş yap', signout:'Çıkış', create_account:'Hesap oluştur',
   hero_title:'Dünyanın her yerinde ev bul', hero_sub:'Her ülkede oda, daire ve aile evi — ev sahibiyle doğrudan konuş, önce gör, sonra öde.', hero_ph:'Şehir, semt, nokta ara…',
@@ -492,7 +494,7 @@ tr:{ nav_home:'Ana sayfa', nav_search:'Ara', nav_map:'Harita', nav_chats:'Sohbet
   rent_d:'Kira', deposit_d:'Depozito', avail_from:'Şu tarihte müsait', contact_l:'İletişim', verified:'Doğrulanmış', views:'görüntüleme',
   save:'Kaydet', cancel:'Vazgeç', del:'Sil', edit:'Düzenle', send:'Gönder', loading:'Yükleniyor…',
   never_pay:'Evi kendi gözünle görmeden asla para gönderme.', report_l:'Bildir',
-  pick_lang:'Dil', lang_suggested:'Ülken için önerilen', lang_all:'Tüm diller' },
+  pick_lang:'Dil', lang_suggested:'Ülken için önerilen', lang_all:'Tüm diller', lang_search:'Dil ara…' },
 it:{ nav_home:'Home', nav_search:'Cerca', nav_map:'Mappa', nav_chats:'Chat', nav_post:'Pubblica', nav_profile:'Profilo', nav_admin:'Admin',
   signin:'Accedi', signout:'Esci', create_account:'Crea account',
   hero_title:'Trova casa ovunque nel mondo', hero_sub:'Camere, appartamenti e case familiari in ogni paese — parla direttamente col proprietario, prima guarda, poi paga.', hero_ph:'Cerca città, zona, punto di riferimento…',
@@ -520,7 +522,7 @@ it:{ nav_home:'Home', nav_search:'Cerca', nav_map:'Mappa', nav_chats:'Chat', nav
   rent_d:'Affitto', deposit_d:'Deposito', avail_from:'Disponibile dal', contact_l:'Contatto', verified:'Verificato', views:'visualizzazioni',
   save:'Salva', cancel:'Annulla', del:'Elimina', edit:'Modifica', send:'Invia', loading:'Caricamento…',
   never_pay:'Non inviare mai denaro prima di aver visto la casa di persona.', report_l:'Segnala',
-  pick_lang:'Lingua', lang_suggested:'Suggerito per il tuo paese', lang_all:'Tutte le lingue' },
+  pick_lang:'Lingua', lang_suggested:'Suggerito per il tuo paese', lang_all:'Tutte le lingue', lang_search:'Cerca lingua…' },
 fa:{ nav_home:'خانه', nav_search:'جستجو', nav_map:'نقشه', nav_chats:'گفتگوها', nav_post:'درج آگهی', nav_profile:'پروفایل', nav_admin:'مدیر',
   signin:'ورود', signout:'خروج', create_account:'ساخت حساب',
   hero_title:'در هر جای دنیا خانه پیدا کنید', hero_sub:'اتاق، آپارتمان و خانه خانوادگی در همه کشورها — مستقیم با مالک صحبت کنید، اول ببینید، بعد بپردازید.', hero_ph:'جستجوی شهر، محله، نشانی…',
@@ -548,7 +550,7 @@ fa:{ nav_home:'خانه', nav_search:'جستجو', nav_map:'نقشه', nav_chats
   rent_d:'اجاره', deposit_d:'پیش‌پرداخت', avail_from:'آماده از', contact_l:'تماس', verified:'تأییدشده', views:'بازدید',
   save:'ذخیره', cancel:'لغو', del:'حذف', edit:'ویرایش', send:'ارسال', loading:'در حال بارگذاری…',
   never_pay:'تا خانه را خودتان ندیده‌اید هرگز پول نفرستید.', report_l:'گزارش',
-  pick_lang:'زبان', lang_suggested:'پیشنهادی برای کشور شما', lang_all:'همه زبان‌ها' },
+  pick_lang:'زبان', lang_suggested:'پیشنهادی برای کشور شما', lang_all:'همه زبان‌ها', lang_search:'جستجوی زبان…' },
 fil:{ nav_home:'Home', nav_search:'Hanapin', nav_map:'Mapa', nav_chats:'Mensahi', nav_post:'I-post', nav_profile:'Profile', nav_admin:'Admin',
   signin:'Sign in', signout:'Sign out', create_account:'Gumawa ng account',
   hero_title:'Maghanap ng bahay kahit saan sa mundo', hero_sub:'Kuwarto, apartment at pamilyang bahay sa bawat bansa — diretso kausap ang may-ari, tingnan muna, bayad mamaya.', hero_ph:'Hanapin ang lungsod, lugar, landmark…',
@@ -576,7 +578,7 @@ fil:{ nav_home:'Home', nav_search:'Hanapin', nav_map:'Mapa', nav_chats:'Mensahi'
   rent_d:'Upa', deposit_d:'Deposito', avail_from:'Available mula', contact_l:'Contact', verified:'Na-verify', views:'views',
   save:'I-save', cancel:'Kanselahin', del:'Burahin', edit:'I-edit', send:'Ipadala', loading:'Naglo-load…',
   never_pay:'Huwag kailan magpadala ng pera bago mo nakita ang bahay nang personal.', report_l:'I-report',
-  pick_lang:'Wika', lang_suggested:'Inirerekomenda para sa bansa mo', lang_all:'Lahat ng wika' },
+  pick_lang:'Wika', lang_suggested:'Inirerekomenda para sa bansa mo', lang_all:'Lahat ng wika', lang_search:'Maghanap ng wika…' },
 pl:{ nav_home:'Start', nav_search:'Szukaj', nav_map:'Mapa', nav_chats:'Czaty', nav_post:'Dodaj', nav_profile:'Profil', nav_admin:'Admin',
   signin:'Zaloguj się', signout:'Wyloguj', create_account:'Utwórz konto',
   hero_title:'Znajdź dom gdziekolwiek na świecie', hero_sub:'Pokoje, mieszkania i domy rodzinne w każdym kraju — rozmawiaj bezpośrednio z właścicielem, najpierw zobacz, potem zapłać.', hero_ph:'Szukaj miasta, okolicy, punktu…',
@@ -604,7 +606,7 @@ pl:{ nav_home:'Start', nav_search:'Szukaj', nav_map:'Mapa', nav_chats:'Czaty', n
   rent_d:'Czynsz', deposit_d:'Kaucja', avail_from:'Dostępne od', contact_l:'Kontakt', verified:'Zweryfikowany', views:'wyświetleń',
   save:'Zapisz', cancel:'Anuluj', del:'Usuń', edit:'Edytuj', send:'Wyślij', loading:'Ładowanie…',
   never_pay:'Nigdy nie wysyłaj pieniędzy, zanim osobiście zobaczysz dom.', report_l:'Zgłoś',
-  pick_lang:'Język', lang_suggested:'Sugerowane dla Twojego kraju', lang_all:'Wszystkie języki' },
+  pick_lang:'Język', lang_suggested:'Sugerowane dla Twojego kraju', lang_all:'Wszystkie języki', lang_search:'Szukaj języka…' },
 nl:{ nav_home:'Start', nav_search:'Zoeken', nav_map:'Kaart', nav_chats:'Chats', nav_post:'Plaatsen', nav_profile:'Profiel', nav_admin:'Beheer',
   signin:'Inloggen', signout:'Uitloggen', create_account:'Account aanmaken',
   hero_title:'Vind een huis waar ter wereld dan ook', hero_sub:'Kamers, appartementen en gezinswonen in elk land — praat direct met de verhuurder, eerst bezichtigen, dan betalen.', hero_ph:'Zoek stad, wijk, herkenningspunt…',
@@ -632,7 +634,7 @@ nl:{ nav_home:'Start', nav_search:'Zoeken', nav_map:'Kaart', nav_chats:'Chats', 
   rent_d:'Huur', deposit_d:'Borg', avail_from:'Beschikbaar vanaf', contact_l:'Contact', verified:'Geverifieerd', views:'keer bekeken',
   save:'Opslaan', cancel:'Annuleren', del:'Verwijderen', edit:'Bewerken', send:'Versturen', loading:'Laden…',
   never_pay:'Stuur nooit geld voordat je het huis persoonlijk hebt gezien.', report_l:'Melden',
-  pick_lang:'Taal', lang_suggested:'Voorgesteld voor je land', lang_all:'Alle talen' },
+  pick_lang:'Taal', lang_suggested:'Voorgesteld voor je land', lang_all:'Alle talen', lang_search:'Taal zoeken…' },
 };
 // ---- engine ----
 function currentLang() {
@@ -653,9 +655,16 @@ function autoLang(cc) {
   // only way to change language; it still shows "Suggested for your country".
   return false;
 }
-function setLang(l) {
+function setLang(l, inPlace) {
   try { if (l && LANGS[l]) localStorage.setItem('hl_lang', l); else localStorage.removeItem('hl_lang'); } catch (e) {}
-  location.reload(); // simplest reliable full re-render in the new language
+  applyI18n(); // html lang + rtl direction right away
+  if (inPlace && typeof route === 'function') {
+    // Re-render the page BEHIND the modal in place — NO location.reload(), so an
+    // open language picker survives with every option still visible (owner rule:
+    // after changing language the options must not disappear).
+    try { route(); return; } catch (e) { /* fall through to the reload */ }
+  }
+  location.reload(); // fallback for callers outside the picker
 }
 function applyI18n() {
   const lang = currentLang() || 'en';
@@ -663,15 +672,39 @@ function applyI18n() {
   document.documentElement.lang = lang;
   document.documentElement.dir = meta.dir; // rtl flips the whole layout for Arabic/Urdu/Persian
 }
-// the globe button — grouped picker: suggested for your country first
+// the globe button — redesigned picker: suggested-for-your-country card first,
+// then a searchable list (native name + English name + RTL tag + check mark).
+// Selecting a language applies it IN PLACE (no reload): the check moves, every
+// label in the picker re-translates, and all options stay right where they were.
 function openLangPicker() {
   const cc = (state && state.cc) || '';
   const sug = defaultLangOfCc(cc);
-  const row = (k, tag) => `<button class="prow" data-lang="${k}" style="padding:10px 12px"><span class="mid" style="flex:1"><b>${LANGS[k].nat}</b>${tag ? ` <span class="mini-tag">${esc(tag)}</span>` : ''}</span>${currentLang() === k ? ic('check') : ''}</button>`;
-  const suggested = sug !== 'en' && LANGS[sug] ? [sug] : [];
-  modal(`<h3>${esc(t('pick_lang'))}</h3>
-    ${suggested.length ? `<p class="hint-t">${esc(t('lang_suggested'))}</p><div style="margin:6px 0 10px">${suggested.map(k => row(k, '')).join('')}</div>` : ''}
-    <p class="hint-t">${esc(t('lang_all'))}</p>
-    <div style="max-height:46vh;overflow:auto;margin-top:6px">${Object.keys(LANGS).map(k => row(k, '')).join('')}</div>`,
-    m => m.querySelectorAll('[data-lang]').forEach(b => b.onclick = () => setLang(b.dataset.lang)));
+  const hasSug = sug !== 'en' && !!LANGS[sug];
+  let q = '';
+  const row = k => `<button type="button" class="lrow${currentLang() === k ? ' on' : ''}" data-lang="${k}">
+    <b class="l-nat">${LANGS[k].nat}</b><small class="l-eng">${LANGS[k].eng}</small>
+    ${LANGS[k].dir === 'rtl' ? '<span class="mini-tag">RTL</span>' : ''}
+    <span class="l-check">${currentLang() === k ? ic('check') : ''}</span></button>`;
+  const sugRow = () => hasSug ? `<button type="button" class="lrow sug${currentLang() === sug ? ' on' : ''}" data-lang="${sug}">
+    ${flagImg(countryOfCc(cc))}<b class="l-nat">${LANGS[sug].nat}</b><small class="l-eng">${LANGS[sug].eng}</small>
+    <span class="l-check">${currentLang() === sug ? ic('check') : ''}</span></button>` : '';
+  const body = () => `
+    <h3>${esc(t('pick_lang'))}</h3>
+    ${sugRow()}
+    <input class="inp" id="lp-q" placeholder="${esc(t('lang_search'))}" style="margin:10px 0 12px" autocomplete="off">
+    <p class="hint-t">${esc(t('lang_all'))} · ${Object.keys(LANGS).length}</p>
+    <div id="lp-list" style="max-height:44vh;overflow:auto;margin-top:8px;padding-right:2px">${Object.keys(LANGS).filter(k => !q || LANGS[k].nat.toLowerCase().includes(q) || LANGS[k].eng.toLowerCase().includes(q) || k.startsWith(q)).map(row).join('') || `<p class="hint-t" style="padding:14px;text-align:center">${esc(q)}</p>`}</div>`;
+  const bind = m => {
+    m.querySelectorAll('[data-lang]').forEach(b => b.onclick = () => {
+      setLang(b.dataset.lang, true); // page re-renders in place — modal stays open
+      m.innerHTML = body();          // rebuild picker: check moves, labels translate, options NEVER disappear
+      bind(m);
+      const nq = m.querySelector('#lp-q'); if (nq) nq.oninput = () => { q = nq.value.trim().toLowerCase(); m.querySelector('#lp-list').innerHTML = Object.keys(LANGS).filter(k => !q || LANGS[k].nat.toLowerCase().includes(q) || LANGS[k].eng.toLowerCase().includes(q) || k.startsWith(q)).map(row).join('') || `<p class="hint-t" style="padding:14px;text-align:center">${esc(q)}</p>`; };
+    });
+  };
+  modal(body(), m => {
+    bind(m);
+    const qi = m.querySelector('#lp-q');
+    qi.oninput = () => { q = qi.value.trim().toLowerCase(); m.querySelector('#lp-list').innerHTML = Object.keys(LANGS).filter(k => !q || LANGS[k].nat.toLowerCase().includes(q) || LANGS[k].eng.toLowerCase().includes(q) || k.startsWith(q)).map(row).join('') || `<p class="hint-t" style="padding:14px;text-align:center">${esc(q)}</p>`; };
+  });
 }

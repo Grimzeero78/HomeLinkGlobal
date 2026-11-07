@@ -55,7 +55,7 @@ async function viewMap() {
         m.bindPopup(`
           <div style="max-width:190px">
             <b>${esc(l.title)}</b><br>
-            <span style="color:var(--ink2)">${cur(l.rent, l.country)}/${perShort(l.period)} · ${esc(l.town)}${l.country ? ' · ' + flagOf(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''}${dl ? ' · ' + esc(dl) : ''}</span><br>
+            <span style="color:var(--ink2)">${cur(l.rent, l.country)}/${perShort(l.period)} · ${esc(l.town)}${l.country ? ' · ' + flagImg(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''}${dl ? ' · ' + esc(dl) : ''}</span><br>
             <a href="#/listing/${l.id}">Open listing →</a>
           </div>`);
         m.on('click', () => highlightSide(l.id));
@@ -122,7 +122,7 @@ async function viewMap() {
           <div class="conv-top"><span class="conv-name">${cur(l.rent, l.country)}/${perShort(l.period)}</span>
             ${boosted ? `<span class="pill pill-o">${ic('bolt')}Boost</span>` : ''}</div>
           <div class="conv-last">${esc(l.title)}</div>
-          <div class="conv-sub"><span style="font-size:11.5px;color:var(--ink3)">${esc(l.town)}${l.country ? ' · ' + flagOf(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''}${l.landmark ? ' · ' + esc(l.landmark) : ''}${dl ? ' · ' + esc(dl) : ''}</span>
+          <div class="conv-sub"><span style="font-size:11.5px;color:var(--ink3)">${esc(l.town)}${l.country ? ' · ' + flagImg(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''}${l.landmark ? ' · ' + esc(l.landmark) : ''}${dl ? ' · ' + esc(dl) : ''}</span>
             <a href="#/listing/${l.id}" class="mini-open">View</a></div>
         </div>
       </div>`;

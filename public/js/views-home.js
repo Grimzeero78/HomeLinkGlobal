@@ -12,7 +12,7 @@ async function viewHome() {
   const myTown = getMyTown();
   const hasPos = !!getMyPos();
   const myC = myCountryName();
-  const myF = myC ? flagOf(myC) : '🌍';
+  const myF = myC ? flagImg(myC) : '🌍';
   v.innerHTML = `
     <section class="hero">
       <div class="hero-leaf"></div>
@@ -22,7 +22,7 @@ async function viewHome() {
         <input class="inp" id="hero-q" placeholder="${esc(t('hero_ph'))}">
         <button class="btn btn-primary" id="hero-go">${ic('search')}</button>
       </div>
-      <div class="hero-chips">${COUNTRIES.filter(c => c.feat).map(c => `<button class="chip" data-area="${esc(c.n)}">${c.f} ${esc(c.n)}</button>`).join('')}</div>
+      <div class="hero-chips">${COUNTRIES.filter(c => c.feat).map(c => `<button class="chip" data-area="${esc(c.n)}">${flagImg(c.n)} ${esc(c.n)}</button>`).join('')}</div>
     </section>
     <div class="sec" id="home-country"></div>
     <div class="sec" id="home-nearby"></div>
@@ -142,7 +142,7 @@ async function viewSearch() {
       <button class="btn btn-green" id="s-go">${ic('search')}</button>
     </div>
     <div class="filters hide" id="s-filters">
-      <h3>${esc(t('f_country'))}</h3><div class="chips" id="f-country">${['<button class="chip" data-v="">' + esc(t('anywhere')) + '</button>'].concat(COUNTRIES.map(c => `<button class="chip" data-v="${esc(c.n)}">${c.f} ${esc(c.n)}</button>`)).join('')}</div>
+      <h3>${esc(t('f_country'))}</h3><div class="chips" id="f-country">${['<button class="chip" data-v="">' + esc(t('anywhere')) + '</button>'].concat(COUNTRIES.map(c => `<button class="chip" data-v="${esc(c.n)}">${flagImg(c.n)} ${esc(c.n)}</button>`)).join('')}</div>
       <h3>${esc(t('f_type'))}</h3><div class="chips" id="f-type">${['<button class="chip" data-v="">Any</button>'].concat(TYPES.map(tp => `<button class="chip" data-v="${esc(tp)}">${esc(tp)}</button>`)).join('')}</div>
       <h3>${esc(t('f_price'))}${SEARCH.country ? ' (' + esc(curSym(SEARCH.country) || curCode(SEARCH.country)) + ')' : ''}</h3>
       <div style="display:flex;gap:8px"><input class="inp" id="f-min" type="number" placeholder="${esc(t('f_min'))}" value="${esc(SEARCH.min)}" ${priceOn ? '' : 'disabled'}><input class="inp" id="f-max" type="number" placeholder="${esc(t('f_max'))}" value="${esc(SEARCH.max)}" ${priceOn ? '' : 'disabled'}></div>

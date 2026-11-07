@@ -6,6 +6,40 @@ const TYPES = ['Single Room', 'Studio', '1 Bedroom', '2 Bedroom', '3 Bedroom', '
 const COUNTRIES = Object.values(CCBYN); // { n, cc, f, code, sym, lg, feat }
 const CFLAG = Object.fromEntries(COUNTRIES.map(c => [c.n, c.f]));
 const flagOf = n => CFLAG[n] || '';
+// Real flag IMAGES — emoji flags don't render on Windows (Chrome/Edge show bare
+// 'KE' letters instead of 🇰🇪), so every visible flag is a self-hosted SVG from
+// /flags/{cc}.svg (192 files, MIT flag-icons, served same-origin so CSP img-src
+// stays 'self'). The emoji stays only as the fallback for non-country strings.
+const flagImg = (n, cls) => {
+  const r = CCBYN[n];
+  if (!r) return CFLAG[n] ? `<span class="femoji">${CFLAG[n]}</span>` : '';
+  return `<img class="fimg${cls ? ' ' + cls : ''}" src="/flags/${r.cc.toLowerCase()}.svg" alt="${r.cc}" loading="lazy" width="21" height="15">`;
+};
+// Searchable country picker with real flags — replaces the old emoji <select>
+// (emoji flags render as bare 'KE' letters on Windows, and 192 options need a
+// search box anyway). Used by the create/edit wizard; onPick(countryName).
+function openCountryPicker(current, onPick) {
+  let q = '';
+  const rows = () => {
+    const hits = COUNTRIES.filter(c => !q || c.n.toLowerCase().includes(q) || c.cc.toLowerCase().startsWith(q));
+    if (!hits.length) return `<p class="hint-t" style="padding:16px;text-align:center">No country matches "${esc(q)}"</p>`;
+    return hits.map(c => `<button type="button" class="cprow${current === c.n ? ' on' : ''}" data-n="${esc(c.n)}">
+      ${flagImg(c.n)}<b style="flex:1">${esc(c.n)}</b><small>${esc(c.sym || '')}${c.sym ? ' · ' : ''}${esc(c.code || '')}</small>${current === c.n ? ic('check') : ''}</button>`).join('');
+  };
+  const paint = m => {
+    m.querySelector('#cp-list').innerHTML = rows();
+    m.querySelectorAll('.cprow').forEach(b => b.onclick = () => { closeModal(); if (onPick) onPick(b.dataset.n); });
+  };
+  modal(`<h3>Choose the country</h3>
+    <input class="inp" id="cp-q" placeholder="Search countries or codes…" style="margin:10px 0 12px" autocomplete="off">
+    <div id="cp-list" style="max-height:52vh;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)"></div>`,
+    m => {
+      paint(m);
+      const qi = m.querySelector('#cp-q');
+      qi.oninput = () => { q = qi.value.trim().toLowerCase(); paint(m); };
+      qi.focus();
+    });
+}
 // (CITIES is defined in world.js — loaded before this file)
 // One planet, one site: the renter's own position (GPS) and the city they are
 // browsing replace the old campus/county concepts.
@@ -321,7 +355,7 @@ function vacInfo(l) {
 function listingCard(l) {
   const boosted = l.boostedUntil && l.boostedUntil > Date.now();
   const verified = l.ownerVerified === 'APPROVED';
-  const fl = flagOf(l.country);
+  const fl = flagImg(l.country);
   const locTxt = [esc(l.town), l.area ? esc(l.area) : '', l.country ? fl + ' ' + esc(l.country) : l.landmark ? esc(l.landmark) : ''].filter(Boolean).join(' · ');
   const dl = distLabel(l);
   const vac = vacInfo(l);

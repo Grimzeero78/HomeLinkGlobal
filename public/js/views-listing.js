@@ -51,7 +51,7 @@ async function viewListing(id) {
       <div class="dhead">
         <div class="dprice">${cur(l.rent, l.country)}<span> /${perShort(l.period).replace('sem', 'semester').replace('yr', 'year').replace('mo', 'month')}</span></div>
         <div class="dtitle">${esc(l.title)}</div>
-        <div class="dmeta">${ic('pin')} ${esc(l.town || 'Worldwide')}${l.country ? ', ' + flagOf(l.country) + ' ' + esc(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''}${l.landmark ? ' · ' + esc(l.landmark) : ''}${dl ? ` · <b style="color:var(--pine-accent)">${esc(dl)}</b>` : ''}</div>
+        <div class="dmeta">${ic('pin')} ${esc(l.town || 'Worldwide')}${l.country ? ', ' + flagImg(l.country) + ' ' + esc(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''}${l.landmark ? ' · ' + esc(l.landmark) : ''}${dl ? ` · <b style="color:var(--pine-accent)">${esc(dl)}</b>` : ''}</div>
         <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
           ${boosted ? `<span class="pill pill-o">${ic('bolt')}Boosted</span>` : ''}
           ${verified ? `<span class="pill pill-g">${ic('shield')}Verified landlord</span>` : ''}

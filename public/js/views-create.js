@@ -58,10 +58,9 @@ async function viewCreate(id) {
       ${txt('title', 'Listing title', 'e.g. Bright 1 Bedroom — Dubai Marina')}
       ${sel('ptype', 'Property type', TYPES)}
       <label class="lbl">Country <span style="font-weight:500">(renters browse and filter by country)</span></label>
-      <select class="inp" data-k="country">
-        <option value="" ${L.country ? '' : 'selected'} disabled>Choose the country…</option>
-        ${COUNTRIES.map(c => `<option value="${esc(c.n)}" ${L.country === c.n ? 'selected' : ''}>${c.f} ${esc(c.n)}</option>`).join('')}
-      </select>
+      <button type="button" class="inp country-pick" id="cp-btn" style="display:flex;align-items:center;gap:10px;text-align:left">
+        ${L.country ? flagImg(L.country) + '<b style="flex:1">' + esc(L.country) + '</b><span style="display:inline-flex;transform:rotate(90deg);color:var(--ink3)">' + ic('chev') + '</span>' : '<span style="flex:1;color:var(--ink3)">Choose the country…</span><span style="display:inline-flex;transform:rotate(90deg);color:var(--ink3)">' + ic('chev') + '</span>'}
+      </button>
       <label class="lbl">City</label>
       <input class="inp" data-k="town" list="city-list" placeholder="e.g. Dubai, London, Lagos" value="${esc(L.town == null ? '' : L.town)}">
       <datalist id="city-list">${CITIES.map(c => `<option value="${esc(c.n)}">${esc(c.c)}</option>`).join('')}</datalist>
@@ -189,6 +188,10 @@ async function viewCreate(id) {
       seg.querySelectorAll('button').forEach(x => x.classList.remove('on'));
       b.classList.add('on'); L[seg.dataset.k] = b.dataset.v;
     }));
+    // country flag picker — writes straight into the wizard state and re-draws
+    // the step so the boost/currency hints pick the new country up instantly
+    const cpBtn = v.querySelector('#cp-btn');
+    if (cpBtn) cpBtn.onclick = () => openCountryPicker(L.country, n => { L.country = n; render(); });
     const neg = v.querySelector('#w-neg'); if (neg) neg.onchange = () => { L.negotiable = neg.checked; };
     // ---- utilities: conditional cost fields ----
     const wcostBox = v.querySelector('#w-wcost'), ecostBox = v.querySelector('#w-ecost'), wificostBox = v.querySelector('#w-wificost');
