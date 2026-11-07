@@ -139,10 +139,9 @@ async function refreshUnread() {
       try { if (cc) localStorage.setItem('hl_cc', cc); else localStorage.removeItem('hl_cc'); } catch (e) {}
       applyCC();
     }
-    // first visit in a country whose main language isn't English → open the app in
-    // that language (India → हिन्दी, Brazil → Português, Egypt → العربية…). A saved
-    // choice always wins; the globe button switches anytime.
-    autoLang(cc); // stored before buildNav()/route() below → first paint already translated
+    // App always opens in English (owner decision) — the globe button in settings
+    // is the only language switch; it suggests the visitor's country language first.
+    autoLang(cc);
   } catch (e) { console.error('boot', e); }
   buildNav();
   window.addEventListener('hashchange', route);

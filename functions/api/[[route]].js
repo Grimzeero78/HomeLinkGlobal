@@ -834,7 +834,7 @@ export async function onRequest(context) {
       if (seg[1] && !seg[2] && method === 'GET') {
         const c = await env.DB.prepare('SELECT * FROM conversations WHERE id = ?').bind(N(seg[1])).first();
         if (!c || (c.studentId !== u.id && c.landlordId !== u.id && u.role !== 'ADMIN')) return bad('Conversation not found', 404);
-        const l = await env.DB.prepare('SELECT id, title, rent, period, ptype, status, contactPhone FROM listings WHERE id = ?').bind(c.listingId).first();
+        const l = await env.DB.prepare('SELECT id, title, rent, period, ptype, status, country, contactPhone FROM listings WHERE id = ?').bind(c.listingId).first();
         const other = await env.DB.prepare('SELECT id, name, username, phone, role, verify_status FROM users WHERE id = ?')
           .bind(c.studentId === u.id ? c.landlordId : c.studentId).first();
         // only the two parties mark messages read — an admin previewing a thread for

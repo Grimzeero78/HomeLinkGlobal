@@ -1,7 +1,7 @@
-// HuntIn — world languages. The app opens in the most-spoken language of the
-// visitor's country (from /api/geo), and anyone can switch in one tap from the
-// globe button. 22 languages ≈ 90% of humanity. Untranslated deep strings fall
-// back to English gracefully — the dictionary grows release by release.
+// HuntIn — world languages. The app ALWAYS opens in English; anyone can switch
+// in one tap from the globe button (settings) — suggested language first.
+// 22 languages ≈ 90% of humanity. Untranslated deep strings fall back to
+// English gracefully — the dictionary grows release by release.
 'use strict';
 const LANGS = {
   en:{ nat:'English', dir:'ltr' }, sw:{ nat:'Kiswahili', dir:'ltr' }, es:{ nat:'Español', dir:'ltr' },
@@ -648,13 +648,9 @@ function t(k, vars) {
   return s;
 }
 function autoLang(cc) {
-  // only auto-pick when the visitor has not chosen a language themselves
-  if (currentLang()) return false;
-  const l = defaultLangOfCc(cc);
-  if (l && l !== 'en' && LANGS[l]) {
-    try { localStorage.setItem('hl_lang', l); } catch (e) {}
-    return true; // caller re-renders so the language takes effect
-  }
+  // CHANGED per owner decision: the app ALWAYS opens in English — no country
+  // auto-switch, not even Swahili in Kenya. The globe button (settings) is the
+  // only way to change language; it still shows "Suggested for your country".
   return false;
 }
 function setLang(l) {
