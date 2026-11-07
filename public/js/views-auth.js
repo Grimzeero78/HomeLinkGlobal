@@ -71,18 +71,19 @@ function wireLogin(v) {
 
 function regForm() {
   return `
-    <label class="lbl">I am a…</label>
-    <div class="seg" id="rg-role"><button type="button" class="on" data-v="SEEKER">Looking for a house</button><button type="button" data-v="LANDLORD">Landlord</button></div>
-    <label class="lbl">Full name</label><input class="inp" id="rg-name" placeholder="e.g. John Smith">
-    <label class="lbl">WhatsApp number <span style="font-weight:500">(include your country code)</span></label>
+    <label class="lbl">${esc(t('i_am'))}</label>
+    <div class="seg" id="rg-role"><button type="button" class="on" data-v="SEEKER">${esc(t('renter'))}</button><button type="button" data-v="LANDLORD">${esc(t('landlord_l'))}</button></div>
+    <label class="lbl">${esc(t('full_name'))}</label><input class="inp" id="rg-name" placeholder="e.g. John Smith">
+    <label class="lbl">${esc(t('whatsapp_l'))} <span style="font-weight:500">(include your country code)</span></label>
     <input class="inp" id="rg-phone" inputmode="tel" placeholder="e.g. +254 712 345 678 or +44 7700 900123">
-    <label class="lbl">Username</label><input class="inp" id="rg-u" autocomplete="username" placeholder="3–20 letters, numbers or _">
-    <label class="lbl">Password</label><input class="inp" id="rg-p" type="password" placeholder="At least 6 characters">
-    <label class="lbl">Confirm password</label><input class="inp" id="rg-p2" type="password" placeholder="Type the password again">
-    <label class="lbl">Password hint</label>
+    <label class="lbl">${esc(t('username_l'))}</label><input class="inp" id="rg-u" autocomplete="username" placeholder="3–20 letters, numbers or _">
+    <label class="lbl">${esc(t('password_l'))}</label><input class="inp" id="rg-p" type="password" autocomplete="new-password" placeholder="${esc(t('pw_ph'))}">
+    ${pwMeterHtml()}
+    <label class="lbl">${esc(t('confirm_l'))}</label><input class="inp" id="rg-p2" type="password" autocomplete="new-password" placeholder="Type the password again">
+    <label class="lbl">${esc(t('hint_l'))}</label>
     <input class="inp" id="rg-hint" placeholder="e.g. my nickname + year I finished school">
-    <p class="hint-t">Shown to you if you forget your password. Don't make it the same as the password.</p>
-    <button class="btn btn-green btn-block" id="rg-go" style="margin-top:18px">Create account</button>`;
+    <p class="hint-t">${esc(t('hint_help'))}</p>
+    <button class="btn btn-green btn-block" id="rg-go" style="margin-top:18px">${esc(t('create_account'))}</button>`;
 }
 
 function wireReg(v) {
@@ -94,16 +95,24 @@ function wireReg(v) {
   });
   v.querySelector('#rg-go').onclick = async () => {
     const btn = v.querySelector('#rg-go'); btn.disabled = true;
+    const pw = v.querySelector('#rg-p').value;
+    const s = pwScore(pw);
+    if (pw.length < 8) { toast(t('pw_len') + ' — ' + t('pw_ph'), true); btn.disabled = false; return; }
+    if (!s.case) { toast(t('pw_case'), true); btn.disabled = false; return; }
+    if (!s.digit) { toast(t('pw_digit'), true); btn.disabled = false; return; }
+    if (s.common) { toast('That password is too common — pick a harder one', true); btn.disabled = false; return; }
+    if (pw !== v.querySelector('#rg-p2').value) { toast('Passwords do not match', true); btn.disabled = false; return; }
     const res = await api('/register', {
       body: {
         role, name: v.querySelector('#rg-name').value, phone: v.querySelector('#rg-phone').value,
-        username: v.querySelector('#rg-u').value, password: v.querySelector('#rg-p').value,
+        username: v.querySelector('#rg-u').value, password: pw,
         confirm: v.querySelector('#rg-p2').value, hint: v.querySelector('#rg-hint').value,
       }
     });
     btn.disabled = false;
     afterAuth(res, '#/welcome');
   };
+  const pin = v.querySelector('#rg-p'); if (pin) wirePwMeter(pin);
 }
 
 // ---------- first-run admin setup ----------
@@ -125,23 +134,32 @@ async function viewSetup() {
     <label class="lbl">Admin name</label><input class="inp" id="su-name" placeholder="e.g. Isaac">
     <label class="lbl">WhatsApp number</label><input class="inp" id="su-phone" inputmode="tel" placeholder="e.g. +2547… (country code)">
     <label class="lbl">Username</label><input class="inp" id="su-u" placeholder="admin">
-    <label class="lbl">Password</label><input class="inp" id="su-p" type="password" placeholder="At least 6 characters">
-    <label class="lbl">Confirm password</label><input class="inp" id="su-p2" type="password">
+    <label class="lbl">Password</label><input class="inp" id="su-p" type="password" autocomplete="new-password" placeholder="${esc(t('pw_ph'))}">
+    ${pwMeterHtml()}
+    <label class="lbl">Confirm password</label><input class="inp" id="su-p2" type="password" autocomplete="new-password">
     <label class="lbl">Password hint</label><input class="inp" id="su-hint">
     <button class="btn btn-green btn-block" id="su-go" style="margin-top:18px">Create admin & sign in</button>
   </div></div>`;
   v.querySelector('#su-go').onclick = async () => {
     const btn = v.querySelector('#su-go'); btn.disabled = true;
+    const pw = v.querySelector('#su-p').value;
+    const s = pwScore(pw);
+    if (pw.length < 8) { toast(t('pw_len') + ' — ' + t('pw_ph'), true); btn.disabled = false; return; }
+    if (!s.case) { toast(t('pw_case'), true); btn.disabled = false; return; }
+    if (!s.digit) { toast(t('pw_digit'), true); btn.disabled = false; return; }
+    if (s.common) { toast('That password is too common — pick a harder one', true); btn.disabled = false; return; }
+    if (pw !== v.querySelector('#su-p2').value) { toast('Passwords do not match', true); btn.disabled = false; return; }
     const res = await api('/setup', {
       body: {
         name: v.querySelector('#su-name').value, phone: v.querySelector('#su-phone').value,
-        username: v.querySelector('#su-u').value, password: v.querySelector('#su-p').value,
+        username: v.querySelector('#su-u').value, password: pw,
         confirm: v.querySelector('#su-p2').value, hint: v.querySelector('#su-hint').value,
       }
     });
     btn.disabled = false;
     afterAuth(res);
   };
+  const spin = v.querySelector('#su-p'); if (spin) wirePwMeter(spin);
 }
 
 // settings-style row (port of the prototype prow)

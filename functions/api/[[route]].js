@@ -32,6 +32,21 @@ async function hashPw(pw, salt) {
   return b64e(bits);
 }
 
+// ---------- strong-password policy (brute-force defence, server-side) ----------
+// 8+ chars, upper + lower, a digit — plus a blocklist of ~30 common passwords
+// with leetspeak normalisation (p4ssw0rd, P@ssword123 are caught too). The UI
+// shows the same rules live; the API is the source of truth.
+const PW_COMMON = ['password','12345678','123456789','1234567890','qwerty123','qwerty12345','password1','password123','iloveyou','admin123','welcome1','welcome123','letmein1','monkey123','dragon123','abc12345','abc123456','11111111','00000000','12341234','1234123412','sunshine1','princess1','football1','baseball1','superman1','trustno1','hunter2','passw0rd','p@ssw0rd'];
+const pwNorm = p => String(p || '').toLowerCase().replace(/[04513@$!]/g, m => ({ '0': 'o', '4': 'a', '5': 's', '1': 'i', '3': 'e', '@': 'a', '$': 's', '!': 'i' }[m] || m));
+function pwError(pw) {
+  const p = String(pw || '');
+  if (p.length < 8) return 'Password must be at least 8 characters';
+  if (!/[A-Z]/.test(p) || !/[a-z]/.test(p)) return 'Password needs BOTH uppercase and lowercase letters (e.g. FastLion7)';
+  if (!/[0-9]/.test(p)) return 'Password needs at least one number (e.g. FastLion7)';
+  if (PW_COMMON.some(c => pwNorm(p).includes(c))) return 'That password is too common — pick a harder one nobody can guess';
+  return null;
+}
+
 const pubUser = u => u ? {
   id: u.id, username: u.username, name: u.name, role: u.role, phone: u.phone,
   verifyStatus: u.verify_status, verifyNote: u.verify_note, suspended: !!u.suspended, createdAt: u.created_at
@@ -438,7 +453,8 @@ export async function onRequest(context) {
       const b = await json_();
       const username = S(b.username).toLowerCase();
       if (!/^[a-z0-9_]{3,20}$/.test(username)) { await releaseLock(); return bad('Username must be 3–20 letters, numbers or underscore'); }
-      if (S(b.password).length < 6) { await releaseLock(); return bad('Password must be at least 6 characters'); }
+      const pwErr = pwError(S(b.password));
+      if (pwErr) { await releaseLock(); return bad(pwErr); }
       if (b.password !== b.confirm) { await releaseLock(); return bad('Passwords do not match'); }
       if (!S(b.hint)) { await releaseLock(); return bad('Password hint is required'); }
       const dup = await env.DB.prepare('SELECT id FROM users WHERE username = ?').bind(username).first();
@@ -455,13 +471,14 @@ export async function onRequest(context) {
 
     // ============ AUTH ============
     if (p0 === 'register' && method === 'POST') {
-      if (!rateLimit('reg:' + ipOf(request), 8, 3600_000)) return tooMany();
+      if (!rateLimit('reg:' + ipOf(request), 12, 3600_000)) return tooMany();
       const b = await json_();
       const username = S(b.username).toLowerCase();
       const password = S(b.password);
       const role = b.role === 'LANDLORD' ? 'LANDLORD' : 'SEEKER';
       if (!/^[a-z0-9_]{3,20}$/.test(username)) return bad('Username must be 3–20 letters, numbers or underscore');
-      if (password.length < 6) return bad('Password must be at least 6 characters');
+      const pwErr = pwError(password);
+      if (pwErr) return bad(pwErr);
       if (password !== S(b.confirm)) return bad('Passwords do not match');
       if (!S(b.hint)) return bad('Password hint is required (it helps you recover your account)');
       if (S(b.hint).toLowerCase() === password.toLowerCase()) return bad('Hint must be different from the password');
@@ -796,7 +813,7 @@ export async function onRequest(context) {
         const rows = (await env.DB.prepare(
           `SELECT c.id, c.listingId, c.studentId, c.landlordId, c.lastMsg, c.lastAt,
                   st.name AS stName, lo.name AS loName, st.phone AS stPhone, lo.phone AS loPhone,
-                  l.title AS ltitle, l.rent AS lrent, l.ptype AS lptype, l.status AS lstatus,
+                  l.title AS ltitle, l.rent AS lrent, l.country AS lcountry, l.ptype AS lptype, l.status AS lstatus,
                   (SELECT COUNT(*) FROM messages m WHERE m.convId = c.id AND m.senderId != ? AND m.readAt IS NULL) AS unread
            FROM conversations c
            JOIN listings l ON l.id = c.listingId
@@ -1049,7 +1066,7 @@ export async function onRequest(context) {
       }
       if (seg[1] === 'listings' && method === 'GET') {
         const rows = (await env.DB.prepare(
-          `SELECT l.id, l.title, l.ptype, l.rent, l.town, l.area, l.status, l.views, l.createdAt, l.boostedUntil, us.username AS owner
+          `SELECT l.id, l.title, l.ptype, l.rent, l.country, l.town, l.area, l.status, l.views, l.createdAt, l.boostedUntil, us.username AS owner
            FROM listings l JOIN users us ON us.id = l.ownerId ORDER BY l.createdAt DESC LIMIT 200`).all()).results || [];
         return ok({ items: rows });
       }

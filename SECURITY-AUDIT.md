@@ -1,9 +1,9 @@
 # HuntIn (Global) — White-Hat Security Audit & Capacity Report
 
 **Date:** 7 Nov 2026 · **Scope:** full API (`functions/api/[[route]].js`), client JS, headers, auth flows, live D1 `homelinkglobal-db`
-**Method:** manual code review + automated attack suite (`scripts/whitehat_test.mjs`, 82 assertions) against a live local instance of the global build.
+**Method:** manual code review + automated attack suite (`scripts/whitehat_test.mjs`, 87 assertions) against a live local instance of the global build.
 
-**Result: 82 / 82 PASSED.** All attempted attacks were blocked or rendered harmless.
+**Result: 87 / 87 PASSED.** (82 baseline + 5 password-policy assertions) All attempted attacks were blocked or rendered harmless.
 
 ## 0. Launch integrity — real platform, zero demo data
 
@@ -64,6 +64,21 @@
 **Admin claim safety**
 - One-time setup: unique `admin_locked` settings row makes the claim race-proof; second attempt `403`; rate limited ✔
 
+## 3b. Password policy & brute-force defence (7 Nov 2026)
+
+- **Strong passwords enforced on both the client and the server** (the API is the source of truth): minimum 8 characters, at least one UPPERCASE + one lowercase letter, at least one digit, and a blocklist of 30 of the most common passwords with leetspeak normalisation (`p4ssw0rd`, `P@ssword123` are caught).
+- Live strength meter on register + setup forms: colour bar (weak / okay / strong) with per-requirement ticks (8+ characters, UPPER & lower, a number 0-9) in every supported language.
+- Layered with the existing brute-force controls: login locked at 15/min/IP **and** 8/min/username, registration capped at 12/hour/IP, PBKDF2-SHA-256 with 100,000 iterations per guess, generic "Wrong username or password" (no user enumeration), constant-time comparison.
+- Verified by the automated suite: 87/87 assertions pass including 5 new password-policy attacks (short password, no uppercase, no digit, common password, strong accepted).
+
+## 3c. World localisation (7 Nov 2026)
+
+- **195 countries** in the gazetteer — every country's flag, ISO code, **local currency** (₹ India, KSh Kenya, £ UK, ₦ Nigeria…) and most-spoken language.
+- **Rent and deposits always display in the listing's own currency** — a house in India shows ₹65,000 to everybody, never USD. The create wizard labels the input with the local symbol as soon as the landlord picks the country.
+- **Floors are a free number** (0 = ground, −1 = basement, up to 300) — Mumbai's 25th-floor flats and Dubai high-rises are no longer forced into a 1–10 dropdown; the listing page renders "25th floor".
+- **Country-first feed**: the home page and search open on the visitor's own country (Cloudflare edge country → e.g. a renter in Kenya sees Kenyan homes — a flat in India can never appear as "near you"). Worldwide sections are clearly labelled "Newest worldwide".
+- **22 languages** covering ≈90% of humanity (English, Kiswahili, Español, Français, Português, العربية, हिन्दी, বাংলা, 中文, Русский, اردو, Bahasa Indonesia, Deutsch, 日本語, 한국어, Tiếng Việt, Türkçe, Italiano, فارسی, Filipino, Polski, Nederlands). First visit auto-opens in the visitor's main language; the globe button switches instantly; Arabic/Urdu/Persian render right-to-left.
+
 ## 4. Residual risks (accepted, documented)
 
 - **Password hints** are recoverable via `/api/hint/:username` (rate limited 10/min/IP). By design it lets real users recover accounts; it also reveals whether a username exists. Hints can never be the password (enforced server-side).
@@ -95,5 +110,5 @@ Account `507a35f3…` runs the **Cloudflare Free plan** (no paid subscriptions).
 ```bash
 cd HuntInGlobal && npm install
 npx wrangler pages dev public --d1 DB=homelinkglobal-local --persist-to .wrangler/state --port 8794 &
-node scripts/whitehat_test.mjs   # 82 assertions, expects 82 passed / 0 failed
+node scripts/whitehat_test.mjs   # 87 assertions, expects 87 passed / 0 failed
 ```

@@ -119,7 +119,7 @@ async function viewAdmin(tab) {
       <div class="row-card" data-l="${l.id}">
         <div class="row-top"><div>
           <div class="row-title"><a href="#/listing/${l.id}">${esc(l.title)}</a></div>
-          <div class="row-sub">${usd(l.rent)} · ${esc(l.town || '—')}${l.area ? ' · ' + esc(l.area) : ''} · @${esc(l.owner)} · ${l.views} views · ${timeAgo(l.createdAt)}</div></div>
+          <div class="row-sub">${cur(l.rent, l.country)} · ${esc(l.town || '—')}${l.area ? ' · ' + esc(l.area) : ''} · @${esc(l.owner)} · ${l.views} views · ${timeAgo(l.createdAt)}</div></div>
           <span class="pill ${l.status === 'AVAILABLE' ? 'pill-g' : l.status === 'TAKEN' ? 'pill-x' : 'pill-r'}">${esc(l.status)}</span>
         </div>
         <div class="row-acts">

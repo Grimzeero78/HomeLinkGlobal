@@ -69,7 +69,8 @@ async function viewCreate(id) {
       ${txt('units', 'Total units in the compound', 'e.g. 6', 'number')}
       <p class="hint-t">Renters see exactly how many units are vacant — start with all of them vacant, then update the count anytime in <b>My listings</b> as houses fill.</p>
       ${sel('furnishing', 'Furnishing', FURN)}
-      ${sel('floor', 'Floor', FLOORS)}` },
+      ${txt('floor', 'Floor number', 'e.g. 0 = ground, 14 = 14th floor (any number OK)', 'number')}
+      <p class="hint-t">${esc(t('floor_hint'))}</p>` },
     { t: 'Location', html: () => `
       ${txt('area', 'Area / neighbourhood (optional)', 'e.g. Marina, Downtown, Block C')}
       ${txt('landmark', 'Nearest landmark (optional)', 'e.g. opposite the mall, near the metro station')}
@@ -92,10 +93,10 @@ async function viewCreate(id) {
         <p class="hint-t" id="pick-walk" style="margin-top:8px"></p>
       </div>` },
     { t: 'Pricing', html: () => `
-      ${txt('rent', 'Rent (USD)', 'e.g. 650', 'number')}
+      ${txt('rent', t('rent_l') + (L.country ? ' (' + (curSym(L.country) || curCode(L.country)) + ' — ' + esc(L.country) + ')' : ''), 'e.g. 650', 'number')}
       ${sel('period', 'Payment period', PERIODS)}
-      ${txt('deposit', 'Deposit (USD) — optional', 'e.g. 650 — leave empty if none', 'number')}
-      ${txt('fees', 'Move-in fees (optional)', 'e.g. Water connection $20 — or "None"')}
+      ${txt('deposit', t('deposit_l') + (L.country ? ' (' + (curSym(L.country) || curCode(L.country)) + ')' : '') + ' — optional', 'leave empty if none', 'number')}
+      ${txt('fees', 'Move-in fees (optional)', 'e.g. Water connection ' + (curSym(L.country) || '$') + '20 — or "None"')}
       <label class="check"><input type="checkbox" id="w-neg" ${L.negotiable ? 'checked' : ''}> Rent is negotiable</label>
       <label class="lbl">Payment terms & house rules (optional)</label>
       <textarea class="inp" data-k="terms" placeholder="e.g. Rent due by 5th of the month. One month deposit."> ${esc(L.terms)}</textarea>` },
@@ -354,8 +355,8 @@ async function viewCreate(id) {
       const rows = [
         ['Title', L.title], ['Type', L.ptype], ['Location', [L.town, L.country].filter(Boolean).join(', ')],
         ['Area', L.area ? L.area + (L.landmark ? ' — ' + L.landmark : '') : ''],
-        ['Rent', L.rent ? usd(L.rent) + ' / ' + (L.period || '').toLowerCase() : ''],
-        ['Deposit', L.deposit ? usd(L.deposit) : 'None'],
+        ['Rent', L.rent ? cur(L.rent, L.country) + ' / ' + (L.period || '').toLowerCase() : ''],
+        ['Deposit', L.deposit ? cur(L.deposit, L.country) : 'None'],
         ['Water', L.water], ['Electricity', L.elec], ['WiFi', L.wifi], ['Bathrooms', L.bath],
         ['Own bathroom', L.ensuite === 'Yes' ? 'Yes' : ''], ['Own kitchen', L.kitchen === 'Yes' ? 'Yes' : ''],
         ['Parking', L.parking === 'Yes' ? 'Yes' : ''],

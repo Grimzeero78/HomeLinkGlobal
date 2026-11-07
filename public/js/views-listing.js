@@ -49,7 +49,7 @@ async function viewListing(id) {
       </div>
       <div class="gal-thumbs">${photos.map((p, i) => `<img src="${p.url}" data-i="${i}" class="${i === 0 ? 'on' : ''}" alt="">`).join('')}</div>` : ''}
       <div class="dhead">
-        <div class="dprice">${usd(l.rent)}<span> /${perShort(l.period).replace('sem', 'semester').replace('yr', 'year').replace('mo', 'month')}</span></div>
+        <div class="dprice">${cur(l.rent, l.country)}<span> /${perShort(l.period).replace('sem', 'semester').replace('yr', 'year').replace('mo', 'month')}</span></div>
         <div class="dtitle">${esc(l.title)}</div>
         <div class="dmeta">${ic('pin')} ${esc(l.town || 'Worldwide')}${l.country ? ', ' + flagOf(l.country) + ' ' + esc(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''}${l.landmark ? ' · ' + esc(l.landmark) : ''}${dl ? ` · <b style="color:var(--pine-accent)">${esc(dl)}</b>` : ''}</div>
         <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
@@ -72,7 +72,7 @@ async function viewListing(id) {
         <div class="dcell"><div class="k">Units in compound</div><div class="v">${l.units}</div></div>
         <div class="dcell"><div class="k">Vacant now</div><div class="v">${vac.full ? '0 — all occupied' : (vac.u > 1 ? vac.v + ' of ' + vac.u : 'Yes — this one')}</div></div>
         <div class="dcell"><div class="k">Furnishing</div><div class="v">${esc(l.furnishing)}</div></div>
-        <div class="dcell"><div class="k">Floor</div><div class="v">${esc(l.floor)}</div></div>
+        <div class="dcell"><div class="k">Floor</div><div class="v">${esc(floorLabel(l.floor))}</div></div>
         <div class="dcell"><div class="k">Road access</div><div class="v">${esc(l.road)}</div></div>
         <div class="dcell"><div class="k">Available from</div><div class="v">${fmtAvail(l.availableFrom)}</div></div>
       </div></div>
@@ -118,8 +118,8 @@ async function viewListing(id) {
       </div>
 
       <div class="sec-block"><h3>Pricing & terms</h3>
-        ${kv('Rent', usd(l.rent) + ' / ' + esc((l.period || '').toLowerCase()))}
-        ${l.deposit ? kv('Deposit', usd(l.deposit)) : ''}
+        ${kv('Rent', cur(l.rent, l.country) + ' / ' + esc((l.period || '').toLowerCase()))}
+        ${l.deposit ? kv('Deposit', cur(l.deposit, l.country)) : ''}
         ${kv('Move-in fees', esc(l.fees || 'None'))}
         ${kv('Negotiable', l.negotiable ? 'Yes' : 'No')}
         ${l.terms ? `<p style="font-size:13.5px;color:var(--ink2);margin-top:8px">${esc(l.terms)}</p>` : ''}

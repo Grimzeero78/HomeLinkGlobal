@@ -1,109 +1,12 @@
 // HuntIn — shared UI helpers, constants, icons
 const TYPES = ['Single Room', 'Studio', '1 Bedroom', '2 Bedroom', '3 Bedroom', '4+ Bedroom', 'Apartment', 'House', 'Villa'];
-// World gazetteer — the countries and cities the app browses, targets boosts and
-// searches first. Coordinates are city-centre approximations (the exact spot always
-// comes from the landlord's map pin or the renter's GPS). feat:1 = hero chip.
-const COUNTRIES = [
-  { n: 'Kenya', f: '🇰🇪', feat: 1 }, { n: 'Uganda', f: '🇺🇬', feat: 1 }, { n: 'Tanzania', f: '🇹🇿' },
-  { n: 'Rwanda', f: '🇷🇼' }, { n: 'Ethiopia', f: '🇪🇹' }, { n: 'Nigeria', f: '🇳🇬', feat: 1 },
-  { n: 'Ghana', f: '🇬🇭', feat: 1 }, { n: 'South Africa', f: '🇿🇦', feat: 1 }, { n: 'Egypt', f: '🇪🇬' },
-  { n: 'Morocco', f: '🇲🇦' }, { n: 'United Kingdom', f: '🇬🇧', feat: 1 }, { n: 'Ireland', f: '🇮🇪' },
-  { n: 'France', f: '🇫🇷' }, { n: 'Germany', f: '🇩🇪', feat: 1 }, { n: 'Spain', f: '🇪🇸' },
-  { n: 'Italy', f: '🇮🇹' }, { n: 'Netherlands', f: '🇳🇱' }, { n: 'Portugal', f: '🇵🇹' },
-  { n: 'Poland', f: '🇵🇱' }, { n: 'Sweden', f: '🇸🇪' }, { n: 'Switzerland', f: '🇨🇭' },
-  { n: 'Turkey', f: '🇹🇷' }, { n: 'United States', f: '🇺🇸', feat: 1 }, { n: 'Canada', f: '🇨🇦', feat: 1 },
-  { n: 'Mexico', f: '🇲🇽' }, { n: 'Brazil', f: '🇧🇷' }, { n: 'Argentina', f: '🇦🇷' },
-  { n: 'Colombia', f: '🇨🇴' }, { n: 'Chile', f: '🇨🇱' }, { n: 'United Arab Emirates', f: '🇦🇪', feat: 1 },
-  { n: 'Saudi Arabia', f: '🇸🇦' }, { n: 'Qatar', f: '🇶🇦' }, { n: 'India', f: '🇮🇳', feat: 1 },
-  { n: 'Pakistan', f: '🇵🇰' }, { n: 'Bangladesh', f: '🇧🇩' }, { n: 'Nepal', f: '🇳🇵' },
-  { n: 'Sri Lanka', f: '🇱🇰' }, { n: 'China', f: '🇨🇳' }, { n: 'Japan', f: '🇯🇵' },
-  { n: 'South Korea', f: '🇰🇷' }, { n: 'Vietnam', f: '🇻🇳' }, { n: 'Thailand', f: '🇹🇭' },
-  { n: 'Malaysia', f: '🇲🇾' }, { n: 'Singapore', f: '🇸🇬' }, { n: 'Indonesia', f: '🇮🇩' },
-  { n: 'Philippines', f: '🇵🇭' }, { n: 'Australia', f: '🇦🇺' }, { n: 'New Zealand', f: '🇳🇿' },
-];
+// The world gazetteer (every country + major cities + currencies + languages) lives
+// in world.js — loaded before this file. Compatibility shims keep the rest of the
+// app reading the same names it always has.
+const COUNTRIES = Object.values(CCBYN); // { n, cc, f, code, sym, lg, feat }
 const CFLAG = Object.fromEntries(COUNTRIES.map(c => [c.n, c.f]));
 const flagOf = n => CFLAG[n] || '';
-// big:1 = major metro (map fallback). Coordinates are city-centre approximations.
-const CITIES = [
-  // Africa
-  { n: 'Nairobi', c: 'Kenya', lat: -1.2864, lng: 36.8172, big: 1 },
-  { n: 'Mombasa', c: 'Kenya', lat: -4.0435, lng: 39.6682 },
-  { n: 'Kisumu', c: 'Kenya', lat: -0.0917, lng: 34.7680 },
-  { n: 'Kampala', c: 'Uganda', lat: 0.3476, lng: 32.5825 },
-  { n: 'Dar es Salaam', c: 'Tanzania', lat: -6.7924, lng: 39.2083 },
-  { n: 'Kigali', c: 'Rwanda', lat: -1.9441, lng: 30.0619 },
-  { n: 'Addis Ababa', c: 'Ethiopia', lat: 9.0192, lng: 38.7525 },
-  { n: 'Lagos', c: 'Nigeria', lat: 6.5244, lng: 3.3792, big: 1 },
-  { n: 'Abuja', c: 'Nigeria', lat: 9.0765, lng: 7.3986 },
-  { n: 'Accra', c: 'Ghana', lat: 5.6037, lng: -0.1870 },
-  { n: 'Johannesburg', c: 'South Africa', lat: -26.2041, lng: 28.0473 },
-  { n: 'Cape Town', c: 'South Africa', lat: -33.9249, lng: 18.4241, big: 1 },
-  { n: 'Durban', c: 'South Africa', lat: -29.8587, lng: 31.0218 },
-  { n: 'Cairo', c: 'Egypt', lat: 30.0444, lng: 31.2357 },
-  { n: 'Casablanca', c: 'Morocco', lat: 33.5731, lng: -7.5898 },
-  // Europe
-  { n: 'London', c: 'United Kingdom', lat: 51.5074, lng: -0.1278, big: 1 },
-  { n: 'Manchester', c: 'United Kingdom', lat: 53.4808, lng: -2.2426 },
-  { n: 'Birmingham', c: 'United Kingdom', lat: 52.4862, lng: -1.8904 },
-  { n: 'Dublin', c: 'Ireland', lat: 53.3498, lng: -6.2603 },
-  { n: 'Paris', c: 'France', lat: 48.8566, lng: 2.3522, big: 1 },
-  { n: 'Berlin', c: 'Germany', lat: 52.5200, lng: 13.4050 },
-  { n: 'Munich', c: 'Germany', lat: 48.1351, lng: 11.5820 },
-  { n: 'Madrid', c: 'Spain', lat: 40.4168, lng: -3.7038 },
-  { n: 'Barcelona', c: 'Spain', lat: 41.3874, lng: 2.1686 },
-  { n: 'Rome', c: 'Italy', lat: 41.9028, lng: 12.4964 },
-  { n: 'Milan', c: 'Italy', lat: 45.4642, lng: 9.1900 },
-  { n: 'Amsterdam', c: 'Netherlands', lat: 52.3676, lng: 4.9041 },
-  { n: 'Brussels', c: 'Belgium', lat: 50.8503, lng: 4.3517 },
-  { n: 'Lisbon', c: 'Portugal', lat: 38.7223, lng: -9.1393 },
-  { n: 'Warsaw', c: 'Poland', lat: 52.2297, lng: 21.0122 },
-  { n: 'Stockholm', c: 'Sweden', lat: 59.3293, lng: 18.0686 },
-  { n: 'Zurich', c: 'Switzerland', lat: 47.3769, lng: 8.5417 },
-  { n: 'Istanbul', c: 'Turkey', lat: 41.0082, lng: 28.9784 },
-  // Americas
-  { n: 'New York', c: 'United States', lat: 40.7128, lng: -74.0060, big: 1 },
-  { n: 'Los Angeles', c: 'United States', lat: 34.0522, lng: -118.2437 },
-  { n: 'Chicago', c: 'United States', lat: 41.8781, lng: -87.6298 },
-  { n: 'Houston', c: 'United States', lat: 29.7604, lng: -95.3698 },
-  { n: 'Miami', c: 'United States', lat: 25.7617, lng: -80.1918 },
-  { n: 'Toronto', c: 'Canada', lat: 43.6532, lng: -79.3832, big: 1 },
-  { n: 'Vancouver', c: 'Canada', lat: 49.2827, lng: -123.1207 },
-  { n: 'Montreal', c: 'Canada', lat: 45.5019, lng: -73.5674 },
-  { n: 'Mexico City', c: 'Mexico', lat: 19.4326, lng: -99.1332 },
-  { n: 'Sao Paulo', c: 'Brazil', lat: -23.5505, lng: -46.6333 },
-  { n: 'Rio de Janeiro', c: 'Brazil', lat: -22.9068, lng: -43.1729 },
-  { n: 'Buenos Aires', c: 'Argentina', lat: -34.6037, lng: -58.3816 },
-  { n: 'Bogota', c: 'Colombia', lat: 4.7110, lng: -74.0721 },
-  { n: 'Santiago', c: 'Chile', lat: -33.4489, lng: -70.6693 },
-  // Middle East
-  { n: 'Dubai', c: 'United Arab Emirates', lat: 25.2048, lng: 55.2708, big: 1 },
-  { n: 'Abu Dhabi', c: 'United Arab Emirates', lat: 24.4539, lng: 54.3773 },
-  { n: 'Doha', c: 'Qatar', lat: 25.2854, lng: 51.5310 },
-  { n: 'Riyadh', c: 'Saudi Arabia', lat: 24.7136, lng: 46.6753 },
-  // Asia
-  { n: 'Mumbai', c: 'India', lat: 19.0760, lng: 72.8777, big: 1 },
-  { n: 'Delhi', c: 'India', lat: 28.6139, lng: 77.2090 },
-  { n: 'Bengaluru', c: 'India', lat: 12.9716, lng: 77.5946 },
-  { n: 'Karachi', c: 'Pakistan', lat: 24.8607, lng: 67.0011 },
-  { n: 'Dhaka', c: 'Bangladesh', lat: 23.8103, lng: 90.4125 },
-  { n: 'Kathmandu', c: 'Nepal', lat: 27.7172, lng: 85.3240 },
-  { n: 'Colombo', c: 'Sri Lanka', lat: 6.9271, lng: 79.8612 },
-  { n: 'Beijing', c: 'China', lat: 39.9042, lng: 116.4074 },
-  { n: 'Shanghai', c: 'China', lat: 31.2304, lng: 121.4737 },
-  { n: 'Tokyo', c: 'Japan', lat: 35.6762, lng: 139.6503, big: 1 },
-  { n: 'Seoul', c: 'South Korea', lat: 37.5665, lng: 126.9780 },
-  { n: 'Bangkok', c: 'Thailand', lat: 13.7563, lng: 100.5018 },
-  { n: 'Kuala Lumpur', c: 'Malaysia', lat: 3.1390, lng: 101.6869 },
-  { n: 'Singapore', c: 'Singapore', lat: 1.3521, lng: 103.8198, big: 1 },
-  { n: 'Jakarta', c: 'Indonesia', lat: -6.2088, lng: 106.8456 },
-  { n: 'Manila', c: 'Philippines', lat: 14.5995, lng: 120.9842 },
-  { n: 'Ho Chi Minh City', c: 'Vietnam', lat: 10.8231, lng: 106.6297 },
-  // Oceania
-  { n: 'Sydney', c: 'Australia', lat: -33.8688, lng: 151.2093 },
-  { n: 'Melbourne', c: 'Australia', lat: -37.8136, lng: 144.9631 },
-  { n: 'Perth', c: 'Australia', lat: -31.9505, lng: 115.8605 },
-  { n: 'Auckland', c: 'New Zealand', lat: -36.8485, lng: 174.7633 },
-];
+// (CITIES is defined in world.js — loaded before this file)
 // One planet, one site: the renter's own position (GPS) and the city they are
 // browsing replace the old campus/county concepts.
 const WORLD_CENTER = { lat: 20, lng: 5 }; // centres the whole planet in view
@@ -118,13 +21,16 @@ const BATHS = ['1', '2', '3', '4+']; // bathroom COUNT — no more "shared/commu
 const TENANTS = ['Anyone', 'Family', 'Singles / couples', 'Working professionals'];
 const ROADS = ['Paved / tarmac', 'Gravel / dirt', 'Footpath only'];
 const SECURITY = ['Guard', 'Gate lock', 'CCTV'];
-const FLOORS = ['Ground', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+// floors: free numeric input worldwide (Mumbai towers have 40+ floors) — see
+// floorLabel() in world.js and the wizard's floor field. No more 1–10 dropdown.
 const AVAIL_OPTIONS = ['Available now', 'Within a week', 'Within a month', 'Next month', 'Pick a date…'];
 const REPORT_REASONS = ['Fake or scam listing', 'Unit is already taken', 'Wrong price or info', 'Poster is not the landlord', 'Misleading photos', 'Other'];
 const BOOST = { days: 7 }; // free during launch — one tap, no payment
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const usd = n => '$' + Number(n || 0).toLocaleString('en-US');
+// rent/deposit ALWAYS render in the listing's own local currency — a house in
+// India shows ₹, in Kenya KSh, in the UK £. cur() is defined in world.js.
 const shortK = n => '$' + (n >= 1000 ? ((n / 1000) >= 10 ? Math.round(n / 1000) : (n / 1000).toFixed(1).replace('.0', '')) + 'k' : String(n || 0));
 const perShort = p => !p ? 'mo' : p.startsWith('Per Month') ? 'mo' : p.startsWith('Per Semester') ? 'sem' : 'yr';
 
@@ -250,6 +156,7 @@ function ic(name, cls) {
     star: '<path d="m12 3 2.7 5.8 6.3.8-4.6 4.4 1.2 6.2-5.6-3.1L6.4 20l1.2-6.2L3 9.6l6.3-.8L12 3z"/>',
     sun: '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7"/>',
     moon: '<path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a7 7 0 1 0 10.7 10.7z"/>',
+    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.7 2.6 4 5.7 4 9s-1.3 6.4-4 9c-2.7-2.6-4-5.7-4-9s1.3-6.4 4-9z"/>',
   };
   // width/height attrs = safe intrinsic default (18px); CSS rules override per context.
   // Without these, an SVG with only a viewBox blows up to fill flex/grid containers.
@@ -425,7 +332,7 @@ function listingCard(l) {
       ${vac.badge}
     </div>
     <div class="cbody">
-      <div class="cprice">${usd(l.rent)}<span>/${perShort(l.period)}</span></div>
+      <div class="cprice">${cur(l.rent, l.country)}<span>/${perShort(l.period)}</span></div>
       <div class="ctitle">${esc(l.title)}</div>
       <div class="cmeta">${ic('pin')}<span>${locTxt}</span></div>
       <div class="ctags">${amenityTags(l)}${dl ? `<span class="mini-tag" style="color:var(--pine-accent)">${ic('pin')} ${esc(dl)}</span>` : ''}</div>
@@ -435,13 +342,53 @@ function listingCard(l) {
 const skeletonGrid = n => `<div class="grid">${Array(n).fill('<div><div class="skel" style="aspect-ratio:4/3;border-radius:16px 16px 0 0"></div><div class="skel" style="height:110px;border-radius:0 0 16px 16px;margin-top:-1px"></div></div>').join('')}</div>`;
 const emptyBox = (title, text) => `<div class="empty">${ic('pin')}<h3>${esc(title)}</h3><p>${esc(text)}</p></div>`;
 
-// HuntIn <CC> — the country suffix on the wordmark (HuntIn KE / UG / US …).
-// state.cc comes from /api/geo (Cloudflare edge country, no cookies, no browser
-// geo permission). Every element carrying [data-cc] gets the 2-letter code, and
-// the tab title picks the suffix up too. Called at boot + on every view render.
+// ---------- password strength (register + setup forms) ----------
+// The server enforces the same rules — this is the live feedback so nobody
+// guesses: 8+ chars, UPPER + lower, a digit. 30 common passwords are rejected
+// outright (leetspeak-normalised: p4ssw0rd counts as "password").
+const PW_COMMON = ['password','12345678','123456789','1234567890','qwerty123','qwerty12345','password1','password123','iloveyou','admin123','welcome1','welcome123','letmein1','monkey123','dragon123','abc12345','abc123456','11111111','00000000','12341234','1234123412','sunshine1','princess1','football1','baseball1','superman1','trustno1','hunter2','passw0rd','p@ssw0rd'];
+const pwNorm = p => String(p || '').toLowerCase().replace(/[04513@$!]/g, m => ({ '0': 'o', '4': 'a', '5': 's', '1': 'i', '3': 'e', '@': 'a', '$': 's', '!': 'i' }[m] || m));
+function pwChecks(p) {
+  p = String(p || '');
+  return {
+    len: p.length >= 8,
+    case: /[a-z]/.test(p) && /[A-Z]/.test(p),
+    digit: /[0-9]/.test(p),
+    common: PW_COMMON.some(c => pwNorm(p).includes(c)),
+  };
+}
+function pwScore(p) {
+  const c = pwChecks(p);
+  const good = [c.len, c.case, c.digit].filter(Boolean).length;
+  return { ...c, strength: good === 3 && !c.common && p.length >= 12 ? 'strong' : (good === 3 && !c.common ? 'ok' : 'weak') };
+}
+function pwMeterHtml() {
+  return `<div class="pw-meter" hidden>
+    <div class="pw-bar"><i></i></div>
+    <div class="pw-reqs">
+      <span data-r="len">${ic('check')} ${esc(t('pw_len'))}</span>
+      <span data-r="case">${ic('check')} ${esc(t('pw_case'))}</span>
+      <span data-r="digit">${ic('check')} ${esc(t('pw_digit'))}</span>
+    </div></div>`;
+}
+function wirePwMeter(input) {
+  const meter = input.parentElement.querySelector('.pw-meter') || input.closest('form,div')?.querySelector('.pw-meter');
+  if (!meter) return;
+  meter.hidden = false;
+  input.addEventListener('input', () => {
+    const s = pwScore(input.value);
+    meter.className = 'pw-meter ' + s.strength;
+    meter.querySelectorAll('[data-r]').forEach(el => {
+      const on = s[el.dataset.r === 'case' ? 'case' : el.dataset.r];
+      el.classList.toggle('ok', on && el.dataset.r !== 'common');
+      el.classList.toggle('bad', !on && el.dataset.r !== 'common');
+    });
+  });
+}
+
 function applyCC() {
   const cc = state.cc || '';
   document.querySelectorAll('[data-cc]').forEach(el => { el.textContent = cc; });
-  const t = 'Houses, Apartments & Rentals worldwide';
-  document.title = cc ? 'HuntIn ' + cc + ' — ' + t : 'HuntIn — ' + t;
+  const title = (typeof t === 'function' ? t('hero_title') : '') || 'Houses, Apartments & Rentals worldwide';
+  document.title = cc ? 'HuntIn ' + cc + ' — ' + title : 'HuntIn — ' + title;
 }

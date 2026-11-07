@@ -27,7 +27,7 @@ async function viewMyListings() {
             </div>
             <div style="min-width:0">
               <div class="row-title">${esc(l.title)}</div>
-              <div class="row-sub">${usd(l.rent)}/${perShort(l.period)} · ${esc(l.town || '')}${l.country ? ' · ' + flagOf(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''} · ${l.views} views</div>
+              <div class="row-sub">${cur(l.rent, l.country)}/${perShort(l.period)} · ${esc(l.town || '')}${l.country ? ' · ' + flagOf(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''} · ${l.views} views</div>
               <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
                 <span class="pill ${vac.full ? 'pill-full' : 'pill-vac'}">${vac.full ? ic('x') : ic('check')}${esc(vac.label)}</span>
                 ${boosted(l) ? `<span class="pill pill-o">${ic('bolt')}Boosted till ${fmtDate(l.boostedUntil)}</span>` : ''}

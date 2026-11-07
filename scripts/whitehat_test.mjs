@@ -47,33 +47,43 @@ const listingBody = over => ({ title: 'Test House 01', ptype: 'Bedsitter', count
   console.log('\n== 1. SETUP CLAIM (one-time admin) ==');
   r = await req('/setup');
   ok('setup available before claim', r.data.ok && r.data.available === true);
-  r = await req('/setup', { body: { name: 'Owner', username: 'owneradmin', password: 'secret123', confirm: 'secret123', hint: 'the usual', phone: '+254712000001' } });
+  r = await req('/setup', { body: { name: 'Owner', username: 'owneradmin', password: 'Secr3tWord', confirm: 'Secr3tWord', hint: 'the usual', phone: '+254712000001' } });
   ok('admin claimed', r.data.ok && r.data.user && r.data.user.role === 'ADMIN', JSON.stringify(r.data));
   const ADM = r.data.token;
   r = await req('/setup');
   ok('setup locked after claim', r.data.ok && r.data.available === false);
-  r = await req('/setup', { body: { name: 'Evil', username: 'eviladmin', password: 'secret123', confirm: 'secret123', hint: 'x', phone: '+254712000002' } });
+  r = await req('/setup', { body: { name: 'Evil', username: 'eviladmin', password: 'Secr3tWord', confirm: 'Secr3tWord', hint: 'x', phone: '+254712000002' } });
   ok('second setup attempt rejected', !r.data.ok && r.status === 403);
 
   console.log('\n== 2. AUTH & INTERNATIONAL PHONE VALIDATION ==');
-  r = await req('/register', { body: { role: 'LANDLORD', name: 'Kamau Njoroge', phone: '+254712345678', username: 'kamau', password: 'pass123', confirm: 'pass123', hint: 'nick' } });
+  r = await req('/register', { body: { role: 'LANDLORD', name: 'Kamau Njoroge', phone: '+254712345678', username: 'kamau', password: 'Str0ngPass', confirm: 'Str0ngPass', hint: 'nick' } });
   ok('register landlord with +254… phone', r.data.ok, JSON.stringify(r.data));
   ok('phone normalised to 254712345678', r.data.ok && r.data.user.phone === '254712345678');
   const LL = r.data.token;
-  r = await req('/register', { body: { role: 'SEEKER', name: 'Ada Okafor', phone: '+447700900123', username: 'ada', password: 'pass123', confirm: 'pass123', hint: 'nick2' } });
+  r = await req('/register', { body: { role: 'SEEKER', name: 'Ada Okafor', phone: '+447700900123', username: 'ada', password: 'Str0ngPass', confirm: 'Str0ngPass', hint: 'nick2' } });
   ok('register seeker with +44… phone', r.data.ok && r.data.user.phone === '447700900123', JSON.stringify(r.data));
   const SK = r.data.token;
-  r = await req('/register', { body: { role: 'SEEKER', name: 'Local Format', phone: '0712345678', username: 'localfmt', password: 'pass123', confirm: 'pass123', hint: 'n' } });
+  r = await req('/register', { body: { role: 'SEEKER', name: 'Local Format', phone: '0712345678', username: 'localfmt', password: 'Str0ngPass', confirm: 'Str0ngPass', hint: 'n' } });
   ok('local 07… phone REJECTED (global platform needs international)', !r.data.ok);
-  r = await req('/register', { body: { role: 'SEEKER', name: 'Bad Phone', phone: '12345', username: 'badphone', password: 'pass123', confirm: 'pass123', hint: 'n' } });
+  r = await req('/register', { body: { role: 'SEEKER', name: 'Bad Phone', phone: '12345', username: 'badphone', password: 'Str0ngPass', confirm: 'Str0ngPass', hint: 'n' } });
   ok('invalid phone rejected', !r.data.ok);
-  r = await req('/register', { body: { role: 'SEEKER', name: 'Dup', phone: '+254711111111', username: 'KAMAU', password: 'pass123', confirm: 'pass123', hint: 'n' } });
+  r = await req('/register', { body: { role: 'SEEKER', name: 'Dup', phone: '+254711111111', username: 'KAMAU', password: 'Str0ngPass', confirm: 'Str0ngPass', hint: 'n' } });
   ok('duplicate username (case-insensitive) rejected', !r.data.ok);
-  r = await req('/register', { body: { role: 'SEEKER', name: 'Sneaky Hint', phone: '+254722222222', username: 'sneakyhint', password: 'pass123', confirm: 'pass123', hint: 'PASS123' } });
+  r = await req('/register', { body: { role: 'SEEKER', name: 'Sneaky Hint', phone: '+254722222222', username: 'sneakyhint', password: 'Str0ngPass', confirm: 'Str0ngPass', hint: 'Str0ngPass' } });
   ok('hint equal to password rejected', !r.data.ok);
+  r = await req('/register', { body: { role: 'SEEKER', name: 'Weak Short', phone: '+254701000001', username: 'weakshort', password: 'Ab1', confirm: 'Ab1', hint: 'n' } });
+  ok('password < 8 chars rejected', !r.data.ok);
+  r = await req('/register', { body: { role: 'SEEKER', name: 'No Upper', phone: '+254701000002', username: 'noupper', password: 'abcdefg1', confirm: 'abcdefg1', hint: 'n' } });
+  ok('password without uppercase rejected', !r.data.ok);
+  r = await req('/register', { body: { role: 'SEEKER', name: 'No Digit', phone: '+254701000003', username: 'nodigit', password: 'Abcdefgh', confirm: 'Abcdefgh', hint: 'n' } });
+  ok('password without digit rejected', !r.data.ok);
+  r = await req('/register', { body: { role: 'SEEKER', name: 'Common', phone: '+254701000004', username: 'commonpw', password: 'Passw0rd1', confirm: 'Passw0rd1', hint: 'n' } });
+  ok('common password (leetspeak Passw0rd1) rejected', !r.data.ok);
+  r = await req('/register', { body: { role: 'SEEKER', name: 'Strong Ok', phone: '+254701000005', username: 'strongok', password: 'FastLion7x', confirm: 'FastLion7x', hint: 'n' } });
+  ok('strong password accepted', r.data.ok, JSON.stringify(r.data));
   r = await req('/login', { body: { username: 'kamau', password: 'WRONG' } });
   ok('wrong password → 401 generic message', r.status === 401 && r.data.error === 'Wrong username or password');
-  r = await req('/login', { body: { username: 'kamau', password: 'pass123' } });
+  r = await req('/login', { body: { username: 'kamau', password: 'Str0ngPass' } });
   ok('login works', r.data.ok);
 
   console.log('\n== 3. ROLE GUARDS ==');
@@ -174,7 +184,7 @@ const listingBody = over => ({ title: 'Test House 01', ptype: 'Bedsitter', count
   ok('unknown town → empty result (no error)', r.data.ok && r.data.items.length === 0);
 
   console.log('\n== 10. IDOR (insecure direct object references) ==');
-  r = await req('/register', { body: { role: 'LANDLORD', name: 'Other Landlord', phone: '+254733444555', username: 'otherll', password: 'pass123', confirm: 'pass123', hint: 'n3' } });
+  r = await req('/register', { body: { role: 'LANDLORD', name: 'Other Landlord', phone: '+254733444555', username: 'otherll', password: 'Str0ngPass', confirm: 'Str0ngPass', hint: 'n3' } });
   const LL2 = r.data.token;
   r = await req('/listings/' + xssId, { method: 'PUT', body: { title: 'Hijacked Title 01' }, token: LL2 });
   ok('cannot edit someone else\'s listing', r.status === 404);
@@ -216,13 +226,13 @@ const listingBody = over => ({ title: 'Test House 01', ptype: 'Bedsitter', count
   if (PART === '1') { console.log('  (skipped — heavy part, run with PART=2)'); }
   else {
   let last = null;
-  for (let i = 0; i < 10; i++) last = await req('/register', { body: { role: 'SEEKER', name: 'Spam ' + i, phone: '+25471200' + i, username: 'spam' + Date.now() + '_' + i, password: 'pass123', confirm: 'pass123', hint: 'n' } });
-  ok('registration flood blocked (8/hour)', last.status === 429, 'last status ' + last.status);
+  for (let i = 0; i < 10; i++) last = await req('/register', { body: { role: 'SEEKER', name: 'Spam ' + i, phone: '+25471200' + i, username: 'spam' + Date.now() + '_' + i, password: 'Str0ngPass', confirm: 'Str0ngPass', hint: 'n' } });
+  ok('registration flood blocked (12/hour)', last.status === 429, 'last status ' + last.status);
   let lastLogin = null;
   for (let i = 0; i < 10; i++) lastLogin = await req('/login', { body: { username: 'bruteforceme', password: 'wrong' + i } });
   ok('login brute force blocked', lastLogin.status === 429, 'last status ' + lastLogin.status);
   let lastSetup = null;
-  for (let i = 0; i < 7; i++) lastSetup = await req('/setup', { body: { name: 'x', username: 'sx' + i, password: 'pass123', confirm: 'pass123', hint: 'h', phone: '+25471234560' } });
+  for (let i = 0; i < 7; i++) lastSetup = await req('/setup', { body: { name: 'x', username: 'sx' + i, password: 'Str0ngPass', confirm: 'Str0ngPass', hint: 'h', phone: '+25471234560' } });
   ok('setup hammering rate limited', lastSetup.status === 429 || lastSetup.status === 403, 'last status ' + lastSetup.status);
   }
 
@@ -278,7 +288,7 @@ const listingBody = over => ({ title: 'Test House 01', ptype: 'Bedsitter', count
   ok('admin hard-deleted suspended user', r.data.ok);
   r = await req('/admin/users', { token: ADM });
   ok('deleted user is gone from the list', r.data.ok && !(r.data.items || []).some(u => u.username === 'otherll'));
-  r = await req('/login', { body: { username: 'otherll', password: 'pass123' } });
+  r = await req('/login', { body: { username: 'otherll', password: 'Str0ngPass' } });
   ok('deleted user cannot log in', !r.data.ok);
   }
 

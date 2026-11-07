@@ -17,6 +17,7 @@ const NAV = [
   ['#/chats', 'chats', 'Chats'],
   ['#/profile', 'user', 'Profile'],
 ];
+const navLabel = key => t('nav_' + ({ pin: 'map', user: 'profile' }[key] || key)); // 首页/搜索/خريطة… per the chosen language
 
 const ROUTES = [
   [/^(|home|privacy)$/i, m => m[1].toLowerCase() === 'privacy' ? viewPrivacy() : viewHome()],
@@ -63,30 +64,34 @@ function buildNav(active) {
     const path = href === '#/' ? '#/' : href;
     return `<a class="bn-item ${cur === key ? 'on' : ''}" href="${path}" data-nav="${key}">
       ${ic(key === 'home' ? 'home' : key === 'search' ? 'search' : key === 'map' ? 'pin' : key === 'chats' ? 'chat' : 'user')}
-      <span>${label}</span>${key === 'chats' ? '<span class="bn-badge" id="nav-dot" hidden></span>' : ''}</a>`;
+      <span>${esc(navLabel(key))}</span>${key === 'chats' ? '<span class="bn-badge" id="nav-dot" hidden></span>' : ''}</a>`;
   }).join('');
 
   const sn = document.getElementById('sidenav-links');
-  const links = [...NAV, ...(state.user && state.user.role === 'ADMIN' ? [['#/admin', 'gear', 'Admin', 'adm']] : []),
+  const links = [...NAV.map(([href, key]) => [href, key, navLabel(key)]),
+    ...(state.user && state.user.role === 'ADMIN' ? [['#/admin', 'gear', navLabel('admin'), 'adm']] : []),
     ...(state.user && state.user.role === 'LANDLORD' ? [['#/mylistings', 'doc', 'My listings'], ['#/new', 'plus', 'Post a listing']] : []),
     ...(state.user ? [['#/favorites', 'heart', 'Favourites']] : [])];
   sn.innerHTML = links.map(([href, key, label, badge]) =>
-    `<a class="sl ${cur === key ? 'on' : ''}" href="${href}" data-nav="${key}">${ic(key === 'chats' ? 'chat' : key)}<span>${label}</span>${key === 'chats' ? '<span class="bn-badge" id="snav-dot" hidden></span>' : ''}${badge === 'adm' ? '<span class="bn-badge" data-adm-badge="total" hidden></span>' : ''}</a>`).join('');
+    `<a class="sl ${cur === key ? 'on' : ''}" href="${href}" data-nav="${key}">${ic(key === 'chats' ? 'chat' : key)}<span>${esc(label)}</span>${key === 'chats' ? '<span class="bn-badge" id="snav-dot" hidden></span>' : ''}${badge === 'adm' ? '<span class="bn-badge" data-adm-badge="total" hidden></span>' : ''}</a>`).join('');
 
   const ta = document.getElementById('top-actions');
   const foot = document.getElementById('sidenav-foot');
   if (state.user) {
-    ta.innerHTML = `<a class="btn btn-outline btn-sm" href="#/profile">${esc((state.user.name || state.user.username).split(' ')[0])}</a>`;
-    foot.innerHTML = `Signed in as <b>${esc(state.user.username)}</b><br><button class="btn btn-ghost btn-sm" id="sn-out" style="margin-top:6px">${ic('out')} Sign out</button>`;
-    foot.querySelector('#sn-out').onclick = async () => {
-      await api('/logout', { method: 'POST' });
-      token.set(null); state.user = null; buildNav();
-      location.hash = '#/home'; toast('Signed out');
-    };
+    ta.innerHTML = `<button class="btn btn-outline btn-sm" id="lang-btn" title="${esc(t('pick_lang'))}">${ic('globe')}</button><a class="btn btn-outline btn-sm" href="#/profile">${esc((state.user.name || state.user.username).split(' ')[0])}</a>`;
+    foot.innerHTML = `Signed in as <b>${esc(state.user.username)}</b><br><button class="btn btn-ghost btn-sm" id="sn-out" style="margin-top:6px">${ic('out')} ${esc(t('signout'))}</button>`;
   } else {
-    ta.innerHTML = `<a class="btn btn-outline btn-sm" href="#/login">Sign in</a><a class="btn btn-primary btn-sm" href="#/register">Join</a>`;
-    foot.innerHTML = `<a class="btn btn-green btn-sm btn-block" href="#/register">Create account</a>`;
+    ta.innerHTML = `<button class="btn btn-outline btn-sm" id="lang-btn" title="${esc(t('pick_lang'))}">${ic('globe')}</button><a class="btn btn-outline btn-sm" href="#/login">${esc(t('signin'))}</a><a class="btn btn-primary btn-sm" href="#/register">${esc(t('create_account'))}</a>`;
+    foot.innerHTML = `<button class="btn btn-outline btn-sm btn-block" id="sn-lang" style="margin-bottom:6px">${ic('globe')} ${esc(t('pick_lang'))}</button><a class="btn btn-green btn-sm btn-block" href="#/register">${esc(t('create_account'))}</a>`;
   }
+  const lb = document.getElementById('lang-btn'); if (lb) lb.onclick = openLangPicker;
+  const slb = document.getElementById('sn-lang'); if (slb) slb.onclick = openLangPicker;
+  const sout = document.getElementById('sn-out');
+  if (sout) sout.onclick = async () => {
+    await api('/logout', { method: 'POST' });
+    token.set(null); state.user = null; buildNav();
+    location.hash = '#/home'; toast('Signed out');
+  };
   refreshUnread();
 }
 
@@ -107,6 +112,7 @@ async function refreshUnread() {
 
 // ---------- boot ----------
 (async function boot() {
+  applyI18n(); // html lang + rtl direction before first paint
   applyTheme(currentTheme()); // before first paint of the shell — respects the saved light/dark/system choice
   // cached country suffix paints instantly (last visit's country); /api/geo below corrects it
   try { const saved = localStorage.getItem('hl_cc'); if (saved) { state.cc = saved; applyCC(); } } catch (e) {}
@@ -133,6 +139,10 @@ async function refreshUnread() {
       try { if (cc) localStorage.setItem('hl_cc', cc); else localStorage.removeItem('hl_cc'); } catch (e) {}
       applyCC();
     }
+    // first visit in a country whose main language isn't English → open the app in
+    // that language (India → हिन्दी, Brazil → Português, Egypt → العربية…). A saved
+    // choice always wins; the globe button switches anytime.
+    autoLang(cc); // stored before buildNav()/route() below → first paint already translated
   } catch (e) { console.error('boot', e); }
   buildNav();
   window.addEventListener('hashchange', route);

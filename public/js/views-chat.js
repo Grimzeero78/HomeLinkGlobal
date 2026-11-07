@@ -38,7 +38,7 @@ async function viewChats() {
           <div class="conv-top"><span class="conv-name">${esc(c.otherName || 'User')}</span>
             <span class="conv-time">${timeAgo(c.lastAt)}</span></div>
           <div class="conv-sub"><span class="conv-last">${esc(c.lastMsg || 'New conversation')}</span>
-            <span class="conv-listing">${usd(c.lrent)}/${perShort(c.lperiod)}</span></div>
+            <span class="conv-listing">${cur(c.lrent, c.lcountry)}/${perShort(c.lperiod)}</span></div>
         </div>
       </a>`).join('');
     refreshUnread();
@@ -72,7 +72,7 @@ async function viewThread(id) {
       <div style="flex:1;min-width:0">
         <div style="font-weight:800;font-size:14.5px">${esc(other.name || other.username)}
           ${other.verifyStatus === 'APPROVED' ? `<span class="vbadge">${ic('shield')}</span>` : ''}</div>
-        <div style="font-size:11.5px;color:var(--ink2)">${esc(listing.title)} · ${usd(listing.rent)}/${perShort(listing.period)}</div>
+        <div style="font-size:11.5px;color:var(--ink2)">${esc(listing.title)} · ${cur(listing.rent, listing.country)}/${perShort(listing.period)}</div>
       </div>
       ${other.phone ? `<a class="btn btn-green btn-sm" href="tel:${esc(other.phone)}">${ic('phone')}</a>
       <a class="btn btn-primary btn-sm" target="_blank" rel="noopener" href="${waLink(other.phone, 'Hi! About “' + listing.title + '” on HuntIn…')}">${ic('wa')}</a>` : ''}
