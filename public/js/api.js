@@ -3,6 +3,7 @@ const TOKEN_KEY = 'hl_token';
 const state = {
   user: null,
   settings: {},
+  cc: '',   // visitor country code (HuntIn KE / UG / US … suffix), from /api/geo
 };
 
 const token = {

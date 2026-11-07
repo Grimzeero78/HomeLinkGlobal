@@ -18,7 +18,7 @@ function viewAuth(tab) {
   v.innerHTML = `<div class="auth-wrap"><div class="auth-card">
     <div class="auth-brand">
       <img class="auth-logo" src="/icons/icon-192.png" alt="HuntIn logo" width="60" height="60">
-      <div class="auth-name">Hunt<b>In</b></div>
+      <div class="auth-name">Hunt<b>In</b><span class="cc" data-cc></span></div>
       <p class="auth-tag">${isReg
         ? 'Create a free account — find a house anywhere in the world or list your own.'
         : 'Vacant houses &amp; apartments across the world — chat with landlords directly, never pay before viewing.'}</p>
@@ -116,7 +116,7 @@ async function viewSetup() {
   v.innerHTML = `<div class="auth-wrap"><div class="auth-card">
     <div class="auth-brand">
       <img class="auth-logo" src="/icons/icon-192.png" alt="HuntIn logo" width="60" height="60">
-      <div class="auth-name">Hunt<b>In</b></div>
+      <div class="auth-name">Hunt<b>In</b><span class="cc" data-cc></span></div>
       <p class="auth-tag">One-time setup — secure your platform before renters and landlords join.</p>
     </div>
     <span class="pill pill-o" style="margin-bottom:10px">${ic('shield')} One-time setup</span>

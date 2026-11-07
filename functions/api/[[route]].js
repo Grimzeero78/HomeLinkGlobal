@@ -414,6 +414,14 @@ export async function onRequest(context) {
     };
     const p0 = seg[0] || '';
 
+    // ============ GEO — visitor country for the HUNTIN <CC> wordmark suffix ============
+    // Cloudflare stamps request.cf.country (ISO-3166 alpha-2) at the edge — no cookies,
+    // no browser geo permission. Public + instant: the frontend calls it once per boot
+    // and the wordmark becomes HuntIn KE / HuntIn UG / HuntIn US … everywhere.
+    if (p0 === 'geo' && method === 'GET') {
+      return ok({ country: (request.cf && request.cf.country) || null });
+    }
+
     // ============ SETUP (first admin) ============
     if (p0 === 'setup') {
       if (method === 'POST' && !rateLimit('setup:' + ipOf(request), 5, 3600_000)) return tooMany();

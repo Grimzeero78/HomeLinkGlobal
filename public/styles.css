@@ -31,6 +31,9 @@ input,select,textarea{font-family:inherit;font-size:15px}
 .brand-logo{width:38px;height:38px;border-radius:11px;box-shadow:0 4px 12px -4px rgba(14,90,51,.5)}
 .brand-word{font-family:var(--disp);font-weight:600;font-size:17px;color:var(--pine-ink)}
 .brand-word b{color:var(--ember);font-weight:800}
+/* country suffix (HuntIn KE / UG / US …) — filled from /api/geo at the edge */
+.cc{color:var(--ember);font-weight:800}
+.splash-word .cc{color:#ffd9b8}
 .brand-m{font-family:var(--disp);font-weight:800;font-size:16.5px;color:var(--pine-ink);letter-spacing:-.01em;display:inline-flex;align-items:center;gap:7px}
 .brand-logo-sm{width:25px;height:25px;border-radius:7px;box-shadow:0 2px 7px -2px rgba(14,90,51,.45)}
 .brand-m b{color:var(--ember)}

@@ -108,6 +108,10 @@ async function refreshUnread() {
 // ---------- boot ----------
 (async function boot() {
   applyTheme(currentTheme()); // before first paint of the shell — respects the saved light/dark/system choice
+  // cached country suffix paints instantly (last visit's country); /api/geo below corrects it
+  try { const saved = localStorage.getItem('hl_cc'); if (saved) { state.cc = saved; applyCC(); } } catch (e) {}
+  // every view render re-applies the suffix (login/setup cards carry [data-cc] spans too)
+  try { new MutationObserver(() => applyCC()).observe(document.getElementById('view'), { childList: true }); } catch (e) {}
   // in "system" mode, follow the device's own light/dark setting live (no reload needed)
   try {
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
@@ -119,9 +123,16 @@ async function refreshUnread() {
     if (e.target.closest('[data-theme-toggle]')) { e.preventDefault(); toggleTheme(); }
   });
   try {
-    const [s, m] = await Promise.all([api('/settings'), token.get() ? api('/me') : Promise.resolve(null)]);
+    const [s, m, g] = await Promise.all([api('/settings'), token.get() ? api('/me') : Promise.resolve(null), api('/geo')]);
     if (s && s.ok && s.settings) state.settings = { ...state.settings, ...s.settings };
     if (m && m.ok && m.user) { state.user = m.user; if (m.token) token.set(m.token); }
+    // visitor country → HUNTIN <CC> wordmark suffix (HuntIn KE / UG / US …)
+    const cc = g && g.ok && g.country ? String(g.country).toUpperCase().slice(0, 2) : '';
+    if (cc !== state.cc) {
+      state.cc = cc;
+      try { if (cc) localStorage.setItem('hl_cc', cc); else localStorage.removeItem('hl_cc'); } catch (e) {}
+      applyCC();
+    }
   } catch (e) { console.error('boot', e); }
   buildNav();
   window.addEventListener('hashchange', route);

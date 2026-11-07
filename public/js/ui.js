@@ -434,3 +434,14 @@ function listingCard(l) {
 }
 const skeletonGrid = n => `<div class="grid">${Array(n).fill('<div><div class="skel" style="aspect-ratio:4/3;border-radius:16px 16px 0 0"></div><div class="skel" style="height:110px;border-radius:0 0 16px 16px;margin-top:-1px"></div></div>').join('')}</div>`;
 const emptyBox = (title, text) => `<div class="empty">${ic('pin')}<h3>${esc(title)}</h3><p>${esc(text)}</p></div>`;
+
+// HuntIn <CC> — the country suffix on the wordmark (HuntIn KE / UG / US …).
+// state.cc comes from /api/geo (Cloudflare edge country, no cookies, no browser
+// geo permission). Every element carrying [data-cc] gets the 2-letter code, and
+// the tab title picks the suffix up too. Called at boot + on every view render.
+function applyCC() {
+  const cc = state.cc || '';
+  document.querySelectorAll('[data-cc]').forEach(el => { el.textContent = cc; });
+  const t = 'Houses, Apartments & Rentals worldwide';
+  document.title = cc ? 'HuntIn ' + cc + ' — ' + t : 'HuntIn — ' + t;
+}
