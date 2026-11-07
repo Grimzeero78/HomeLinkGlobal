@@ -1,0 +1,13 @@
+{
+  "name": "huntin-global",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HuntIn — houses & rentals worldwide. Static frontend + Cloudflare Pages Functions + D1.",
+  "scripts": {
+    "dev": "wrangler pages dev public --d1 DB=homelinkglobal-local --persist-to .wrangler/state --port 8788",
+    "schema": "wrangler d1 execute homelinkglobal-local --local --file schema.sql --persist-to .wrangler/state"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}
