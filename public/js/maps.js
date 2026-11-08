@@ -107,7 +107,7 @@ function makeMap(el, opts = {}) {
   ctl.className = 'gmap-ctl';
   ctl.innerHTML = `<button type="button" class="gmap-btn" data-a="zi" aria-label="Zoom in">+</button>
     <button type="button" class="gmap-btn" data-a="zo" aria-label="Zoom out">&minus;</button>
-    <button type="button" class="gmap-btn wide" data-a="sat" aria-label="Toggle satellite view">Satellite</button>`;
+    <button type="button" class="gmap-btn wide" data-a="sat" aria-label="Satellite">${esc(t('sat_b'))}</button>`;
   el.appendChild(ctl);
   // control clicks must NEVER reach the map (otherwise tapping +/−/Satellite in
   // the picker would fire a map click and quietly move the pin to the corner)

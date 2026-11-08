@@ -3,18 +3,8 @@
 // Unique: Quick-reply chips (one-tap common questions) — role aware
 let chatTimer = null;
 
-const QR_STUDENT = [
-  'Is it still available?',
-  'Can I view it this weekend?',
-  'What is the total monthly cost?',
-  'Is water included in the rent?',
-];
-const QR_LANDLORD = [
-  'Yes, it is available.',
-  'When would you like to come for viewing?',
-  'Viewings: Mon–Sat, 8 AM – 6 PM.',
-  'Deposit is one month rent.',
-];
+const QR_STUDENT = () => [t('qr1'), t('qr2'), t('qr3'), t('qr4')];
+const QR_LANDLORD = () => [t('qr5'), t('qr6'), t('qr7'), t('qr8')];
 
 async function viewChats() {
   if (!state.user) { location.hash = '#/login'; return; }
@@ -61,7 +51,7 @@ async function viewThread(id) {
   const me = state.user.id;
   const iAmLandlord = state.user.role === 'LANDLORD';
 
-  const quickReplies = (iAmLandlord ? QR_LANDLORD : QR_STUDENT).map(q =>
+  const quickReplies = (iAmLandlord ? QR_LANDLORD() : QR_STUDENT()).map(q =>
     `<button type="button" class="qr-chip">${esc(q)}</button>`).join('');
 
   v.innerHTML = `
@@ -75,7 +65,7 @@ async function viewThread(id) {
       </div>
       ${other.phone ? `<a class="btn btn-green btn-sm" href="tel:${esc(other.phone)}">${ic('phone')}</a>
       <a class="btn btn-primary btn-sm" target="_blank" rel="noopener" href="${waLink(other.phone, 'Hi! About “' + listing.title + '” on HuntIn…')}">${ic('wa')}</a>` : ''}
-      <button class="back-m" id="th-report" title="Report" style="flex:none">${ic('flag')}</button>
+      <button class="back-m" id="th-report" title="${esc(t('report_l'))}" style="flex:none">${ic('flag')}</button>
     </div>
     <div class="thread">
       <div class="thread-msgs" id="th-msgs"></div>

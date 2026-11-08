@@ -15,6 +15,19 @@ const flagImg = (n, cls) => {
   if (!r) return CFLAG[n] ? `<span class="femoji">${CFLAG[n]}</span>` : '';
   return `<img class="fimg${cls ? ' ' + cls : ''}" src="/flags/${r.cc.toLowerCase()}.svg" alt="${r.cc}" loading="lazy" width="21" height="15">`;
 };
+// tv(value) — translate a STORED enum value ('Per Month', 'Own meter', 'Guard'…)
+// into the current language. The DB always keeps the English value; only the
+// LABEL is translated. Slug = v_<words>, e.g. 'Singles / couples' -> v_singles_couples.
+// Values with no dictionary entry (legacy free text) pass through unchanged.
+const tv = v => {
+  if (v == null) return '';
+  const s = String(v);
+  const slug = 'v_' + s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  const tr = t(slug);
+  return tr === slug ? s : tr; // t() echoes unknown keys back — detect and fall through
+};
+// long period word for the detail price line: 'Per Month' -> "month" (localized)
+const perLong = p => !p ? t('per_mo') : p.startsWith('Per Month') ? t('per_mo') : p.startsWith('Per Semester') ? t('per_sem') : t('per_yr');
 // Searchable country picker with real flags — replaces the old emoji <select>
 // (emoji flags render as bare 'KE' letters on Windows, and 192 options need a
 // search box anyway). Used by the create/edit wizard; onPick(countryName).
@@ -22,7 +35,7 @@ function openCountryPicker(current, onPick) {
   let q = '';
   const rows = () => {
     const hits = COUNTRIES.filter(c => !q || c.n.toLowerCase().includes(q) || c.cc.toLowerCase().startsWith(q));
-    if (!hits.length) return `<p class="hint-t" style="padding:16px;text-align:center">No country matches "${esc(q)}"</p>`;
+    if (!hits.length) return `<p class="hint-t" style="padding:16px;text-align:center">${esc(t('no_country').replace('{q}', q))}</p>`;
     return hits.map(c => `<button type="button" class="cprow${current === c.n ? ' on' : ''}" data-n="${esc(c.n)}">
       ${flagImg(c.n)}<b style="flex:1">${esc(c.n)}</b><small>${esc(c.sym || '')}${c.sym ? ' · ' : ''}${esc(c.code || '')}</small>${current === c.n ? ic('check') : ''}</button>`).join('');
   };
@@ -89,8 +102,8 @@ function nearestTown(lat, lng) {
   return { town: best.n, dist: bd };
 }
 function askLocation(cb) {
-  if (!navigator.geolocation) { toast('Your browser does not support location', true); return; }
-  toast('Getting your location…');
+  if (!navigator.geolocation) { toast(t('geo_no_browser'), true); return; }
+  toast(t('getting_loc'));
   navigator.geolocation.getCurrentPosition(
     p => {
       setMyPos(p.coords.latitude, p.coords.longitude);
@@ -98,7 +111,7 @@ function askLocation(cb) {
       if (near.dist < 60000) setMyTown(near.town); // GPS says which town you are in
       if (cb) cb(true);
     },
-    () => { toast('Location permission denied — choose your town below instead', true); if (cb) cb(false); },
+    () => { toast(t('loc_denied'), true); if (cb) cb(false); },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 120000 }
   );
 }
@@ -106,33 +119,33 @@ function askLocation(cb) {
 function distLabel(l) {
   const p = getMyPos();
   if (!p || l.lat == null || l.lng == null) return '';
-  return fmtDist(distMeters(p, l)) + ' away';
+  return t('ta_away').replace('{d}', fmtDist(distMeters(p, l)));
 }
 
 function timeAgo(ts) {
   if (!ts) return '';
   const s = Math.max(1, (Date.now() - ts) / 1000);
-  if (s < 60) return 'just now';
-  if (s < 3600) return Math.floor(s / 60) + 'm ago';
-  if (s < 86400) return Math.floor(s / 3600) + 'h ago';
-  if (s < 86400 * 7) return Math.floor(s / 86400) + 'd ago';
+  if (s < 60) return t('ta_now');
+  if (s < 3600) return t('ta_m').replace('{n}', Math.floor(s / 60));
+  if (s < 86400) return t('ta_h').replace('{n}', Math.floor(s / 3600));
+  if (s < 86400 * 7) return t('ta_d').replace('{n}', Math.floor(s / 86400));
   return new Date(ts).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 }
 function fmtDate(ts) { return new Date(ts).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); }
-function fmtAvail(v) { if (!v) return 'Now'; return /^\d{4}-\d{2}-\d{2}/.test(v) ? fmtDate(v) : v; }
+function fmtAvail(v) { if (!v) return t('now_b'); return /^\d{4}-\d{2}-\d{2}/.test(v) ? fmtDate(v) : tv(v); }
 const parseSecurity = s => { try { const v = JSON.parse(s || '[]'); return Array.isArray(v) ? v : []; } catch { return []; } };
 
 function amenityTags(l) {
-  const t = [];
-  if (l.water === 'Included in rent') t.push('Water incl.');
-  if (l.wifi === 'Included in rent') t.push('WiFi');
-  if (l.elec === 'Included in rent') t.push('Power incl.');
-  if (l.ensuite === 'Yes' || l.bath === 'Ensuite (own)') t.push('En-suite');
-  if (l.kitchen === 'Yes' || l.kitchen === 'Own') t.push('Own kitchen');
-  if (l.parking === 'Yes') t.push('Parking');
-  if (l.backup && l.backup !== 'None') t.push(l.backup + ' backup');
-  if (parseSecurity(l.security).includes('Guard')) t.push('Guard');
-  return t.slice(0, 3).map(x => `<span class="mini-tag">${esc(x)}</span>`).join('');
+  const a = [];
+  if (l.water === 'Included in rent') a.push(t('am_water'));
+  if (l.wifi === 'Included in rent') a.push('WiFi');
+  if (l.elec === 'Included in rent') a.push(t('am_power'));
+  if (l.ensuite === 'Yes' || l.bath === 'Ensuite (own)') a.push(t('am_ensuite'));
+  if (l.kitchen === 'Yes' || l.kitchen === 'Own') a.push(t('am_kitchen'));
+  if (l.parking === 'Yes') a.push(t('am_parking'));
+  if (l.backup && l.backup !== 'None') a.push(t('am_backup').replace('{x}', tv(l.backup)));
+  if (parseSecurity(l.security).includes('Guard')) a.push(t('am_guard'));
+  return a.slice(0, 3).map(x => `<span class="mini-tag">${esc(x)}</span>`).join('');
 }
 
 // Search a place: the built-in world cities first (instant + always works),
@@ -344,13 +357,13 @@ function vacInfo(l) {
   const full = v <= 0 || l.status === 'TAKEN';
   return {
     u, v, full,
-    label: full ? (u > 1 ? `All ${u} units occupied` : 'Occupied')
-      : (u <= 1 ? 'Vacant now' : `${v} of ${u} units vacant`),
+    label: full ? (u > 1 ? t('card_all_occ').replace('{u}', u) : t('card_occupied'))
+      : (u <= 1 ? t('vacant_now') : t('card_vac_of').replace('{v}', v).replace('{u}', u)),
     badge: full
-      ? `<span class="badge-vac full">${ic('x')} ALL OCCUPIED</span>`
+      ? `<span class="badge-vac full">${ic('x')} ${esc(t('badge_all_occ'))}</span>`
       : (u <= 1
-        ? `<span class="badge-vac open">${ic('check')} VACANT</span>`
-        : `<span class="badge-vac open">${ic('check')} ${v} VACANT<span class="bv-of">of ${u}</span></span>`),
+        ? `<span class="badge-vac open">${ic('check')} ${esc(t('badge_vacant'))}</span>`
+        : `<span class="badge-vac open">${ic('check')} ${v} ${esc(t('badge_vacant'))}<span class="bv-of">${esc(t('badge_of').replace('{u}', u))}</span></span>`),
   };
 }
 function listingCard(l) {

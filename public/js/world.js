@@ -120,10 +120,10 @@ function floorLabel(f) {
   if (!s) return '';
   if (/^-?\d+$/.test(s)) {
     const n = parseInt(s, 10);
-    if (n === 0) return 'Ground floor';
-    if (n === -1) return 'Basement';
-    if (n === -2) return 'Basement 2';
-    return n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th') + ' floor';
+    if (n === 0) return t('fl_ground');
+    if (n === -1) return t('fl_basement');
+    if (n === -2) return t('fl_basement2');
+    return t('fl_nth').replace('{n}', n); // localized "14 floor" style (no EN ordinal suffixes)
   }
   return s; // legacy values like 'Ground', '3rd'
 }

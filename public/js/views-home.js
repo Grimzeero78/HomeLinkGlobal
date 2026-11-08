@@ -117,7 +117,7 @@ async function viewHome() {
     cta.innerHTML = `<div class="sec-block" style="background:var(--pine);color:#fff;border:none">
       <h3 style="color:#fff">${esc(t('have_house'))}</h3>
       <p style="font-size:13.5px;color:#d8e8dd;margin-top:8px"><b>1.</b> ${esc(t('verified'))} — ${esc(t('how2_d'))}</p>
-      <p style="font-size:13.5px;color:#d8e8dd;margin-bottom:14px"><b>2. Boost</b> — free during launch: one tap pins a listing at the <b>top for ${BOOST.days} days</b> for every renter browsing your country. Free while HuntIn is new.</p>
+      <p style="font-size:13.5px;color:#d8e8dd;margin-bottom:14px"><b>2. ${esc(t('boost_b'))}</b> — ${t('cta_boost_d').replace('{n}', BOOST.days)}</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         ${state.user.verifyStatus !== 'APPROVED' ? `<a class="btn btn-primary" href="#/profile">${ic('shield')} ${esc(t('verified'))}</a>` : ''}
         <a class="btn btn-outline" href="#/mylistings">${ic('doc')} ${esc(t('nav_profile'))}</a>
@@ -143,7 +143,7 @@ async function viewSearch() {
     </div>
     <div class="filters hide" id="s-filters">
       <h3>${esc(t('f_country'))}</h3><div class="chips" id="f-country">${['<button class="chip" data-v="">' + esc(t('anywhere')) + '</button>'].concat(COUNTRIES.map(c => `<button class="chip" data-v="${esc(c.n)}">${flagImg(c.n)} ${esc(c.n)}</button>`)).join('')}</div>
-      <h3>${esc(t('f_type'))}</h3><div class="chips" id="f-type">${['<button class="chip" data-v="">Any</button>'].concat(TYPES.map(tp => `<button class="chip" data-v="${esc(tp)}">${esc(tp)}</button>`)).join('')}</div>
+      <h3>${esc(t('f_type'))}</h3><div class="chips" id="f-type">${['<button class="chip" data-v="">' + esc(t('any_t')) + '</button>'].concat(TYPES.map(tp => `<button class="chip" data-v="${esc(tp)}">${esc(tv(tp))}</button>`)).join('')}</div>
       <h3>${esc(t('f_price'))}${SEARCH.country ? ' (' + esc(curSym(SEARCH.country) || curCode(SEARCH.country)) + ')' : ''}</h3>
       <div style="display:flex;gap:8px"><input class="inp" id="f-min" type="number" placeholder="${esc(t('f_min'))}" value="${esc(SEARCH.min)}" ${priceOn ? '' : 'disabled'}><input class="inp" id="f-max" type="number" placeholder="${esc(t('f_max'))}" value="${esc(SEARCH.max)}" ${priceOn ? '' : 'disabled'}></div>
       ${priceOn ? '' : `<p class="hint-t">${esc(t('f_country'))}: ${esc(t('anywhere'))}</p>`}
@@ -208,11 +208,11 @@ async function viewSearch() {
     if (stale(gen)) return;
     const box = v.querySelector('#s-results');
     if (!box) return; // view replaced while fetching
-    if (!r.ok) { box.innerHTML = emptyBox('Search failed', r.error || 'Try again'); return; }
+    if (!r.ok) { box.innerHTML = emptyBox(t('search_fail'), r.error || t('try_again')); return; }
     let items = r.items;
     if (SEARCH.sort === 'near') {
       const pos = getMyPos();
-      if (!pos) { toast('Allow location first — tap "Use my location" on the home page', true); }
+      if (!pos) { toast(t('allow_loc_first'), true); }
       else items = items.filter(l => l.lat != null && l.lng != null)
         .map(l => ({ l, d: distMeters(pos, l) })).sort((a, b) => a.d - b.d).map(x => x.l);
     }

@@ -128,19 +128,19 @@ async function viewSetup() {
     <div class="auth-brand">
       <img class="auth-logo" src="/icons/icon-192.png" alt="HuntIn logo" width="60" height="60">
       <div class="auth-name">Hunt<b>In</b><span class="cc" data-cc></span></div>
-      <p class="auth-tag">One-time setup — secure your platform before renters and landlords join.</p>
+      <p class="auth-tag">${esc(t('setup_tag'))}</p>
     </div>
-    <span class="pill pill-o" style="margin-bottom:10px">${ic('shield')} One-time setup</span>
-    <h1>Create the admin account</h1>
-    <p class="auth-sub">This page only works once — the first account created here becomes the platform Admin. Do this right after deploying.</p>
-    <label class="lbl">Admin name</label><input class="inp" id="su-name" placeholder="e.g. Isaac">
-    <label class="lbl">WhatsApp number</label><input class="inp" id="su-phone" inputmode="tel" placeholder="e.g. +2547… (country code)">
-    <label class="lbl">Username</label><input class="inp" id="su-u" placeholder="admin">
-    <label class="lbl">Password</label><input class="inp" id="su-p" type="password" autocomplete="new-password" placeholder="${esc(t('pw_ph'))}">
+    <span class="pill pill-o" style="margin-bottom:10px">${ic('shield')} ${esc(t('setup_pill'))}</span>
+    <h1>${esc(t('setup_h1'))}</h1>
+    <p class="auth-sub">${esc(t('setup_sub'))}</p>
+    <label class="lbl">${esc(t('setup_name'))}</label><input class="inp" id="su-name" placeholder="${esc(t('setup_name_ph'))}">
+    <label class="lbl">${esc(t('whatsapp_l'))}</label><input class="inp" id="su-phone" inputmode="tel" placeholder="${esc(t('setup_phone_ph'))}">
+    <label class="lbl">${esc(t('username'))}</label><input class="inp" id="su-u" placeholder="${esc(t('setup_user_ph'))}">
+    <label class="lbl">${esc(t('password_l'))}</label><input class="inp" id="su-p" type="password" autocomplete="new-password" placeholder="${esc(t('pw_ph'))}">
     ${pwMeterHtml()}
-    <label class="lbl">Confirm password</label><input class="inp" id="su-p2" type="password" autocomplete="new-password">
-    <label class="lbl">Password hint</label><input class="inp" id="su-hint">
-    <button class="btn btn-green btn-block" id="su-go" style="margin-top:18px">Create admin & sign in</button>
+    <label class="lbl">${esc(t('confirm_l'))}</label><input class="inp" id="su-p2" type="password" autocomplete="new-password">
+    <label class="lbl">${esc(t('hint_l'))}</label><input class="inp" id="su-hint">
+    <button class="btn btn-green btn-block" id="su-go" style="margin-top:18px">${esc(t('setup_go'))}</button>
   </div></div>`;
   v.querySelector('#su-go').onclick = async () => {
     const btn = v.querySelector('#su-go'); btn.disabled = true;
@@ -236,7 +236,7 @@ async function viewProfile(edit) {
     </div>
     <div class="plabel">${esc(t('settings'))}</div>
     <div class="prowbox">
-      <button class="prow" data-theme-toggle type="button">${ic('gear')}<span class="mid"><b>${esc(t('theme'))} <span class="theme-state">System</span></b><small>${esc(t('theme_sub'))}</small></span></button>
+      <button class="prow" data-theme-toggle type="button">${ic('gear')}<span class="mid"><b>${esc(t('theme'))} <span class="theme-state">${esc(t('theme_sys_s'))}</span></b><small>${esc(t('theme_sub'))}</small></span></button>
       <button class="prow danger" id="pf-out">${ic('out')}<span class="mid"><b>${esc(t('signout'))}</b><small>${esc(t('signout_d'))}</small></span></button>
     </div>`;
   v.appendChild(tools);
@@ -315,49 +315,49 @@ function viewWelcome() {
   const hi = state.user && state.user.name ? ', ' + esc(state.user.name.split(' ')[0]) : '';
   const seeker = `
     <div class="notice notice-o" style="margin-top:14px">
-      ${ic('shield')}<span><b>Never send money before you SEE the house.</b>
-      No deposit, no booking fee, no reservation — nothing. Visit the house first, then pay the landlord directly.</span>
+      ${ic('shield')}<span><b>${esc(t('welc_scam_t'))}</b>
+      ${esc(t('welc_scam_d'))}</span>
     </div>
-    <div class="sec-block"><h3>How HuntIn works</h3>
+    <div class="sec-block"><h3>${esc(t('how_t'))}</h3>
       <ol class="guide-list">
-        <li><b>Search</b> — type a city or country in the search bar, or tap <b>Use my location</b> to see vacant houses nearest to you first.</li>
-        <li><b>Open &amp; compare</b> — check the photos, rent, deposit, water and electricity on every listing before you chat.</li>
-        <li><b>Chat</b> — message the landlord in the app or on WhatsApp. Ask anything — when to view, what is included.</li>
-        <li><b>Visit &amp; view</b> — go see the house in daylight, ideally with a friend. A real landlord will welcome this.</li>
-        <li><b>Pay only after viewing</b> — deposit and rent go directly to the landlord, never through HuntIn.</li>
+        <li>${t('welc_g1')}</li>
+        <li>${t('welc_g2')}</li>
+        <li>${t('welc_g3')}</li>
+        <li>${t('welc_g4')}</li>
+        <li>${t('welc_g5')}</li>
       </ol>
     </div>
-    <div class="sec-block"><h3>Red flags — walk away</h3>
+    <div class="sec-block"><h3>${esc(t('welc_flags_t'))}</h3>
       <ul class="guide-list">
-        <li>Anyone rushing you to send money for a house you have not seen.</li>
-        <li>“Pay first to book” stories, or rent too cheap for that area.</li>
-        <li>Refusing a video call or a physical viewing.</li>
+        <li>${esc(t('welc_f1'))}</li>
+        <li>${esc(t('welc_f2'))}</li>
+        <li>${esc(t('welc_f3'))}</li>
       </ul>
-      <p class="hint-t">See a fake listing? Open it and tap <b>Report</b> — every report is reviewed by the admin.</p>
+      <p class="hint-t">${t('welc_report')}</p>
     </div>
-    <a class="btn btn-green btn-block" href="#/home">${ic('pin')} Find houses near me</a>`;
+    <a class="btn btn-green btn-block" href="#/home">${ic('pin')} ${esc(t('welc_find_btn'))}</a>`;
   const landlord = `
-    <div class="sec-block"><h3>Your 4 steps to renting out faster</h3>
+    <div class="sec-block"><h3>${esc(t('welc_ll_t'))}</h3>
       <ol class="guide-list">
-        <li><b>Get verified</b> — Profile → verification: upload your ID and an ownership photo. The admin approves it, you earn the green badge and <b>5 listings instead of 2</b>. Renters trust the badge — verified landlords get more chats.</li>
-        <li><b>Post your house</b> — tap <b>Post a new listing</b>: 8 quick steps. Pick the country & city, pin your exact gate on the map, add 3+ clear daylight photos.</li>
-        <li><b>Boost free</b> — one tap pins your listing at the <b>top for ${BOOST.days} days</b> for every renter browsing your country. Free while HuntIn is new.</li>
-        <li><b>Reply fast</b> — houses whose landlord answers quickly rent much faster. Chats land in your Chats tab.</li>
+        <li>${t('welc_l1')}</li>
+        <li>${t('welc_l2')}</li>
+        <li>${t('welc_l3').replace('{n}', BOOST.days)}</li>
+        <li>${t('welc_l4')}</li>
       </ol>
     </div>
     <div class="notice notice-g" style="margin-top:14px">
-      ${ic('shield')}<span><b>Be the landlord renters trust:</b> never ask for money before a viewing, and meet tenants at the house in daylight. HuntIn never collects money on your behalf.</span>
+      ${ic('shield')}<span>${t('welc_ll_note')}</span>
     </div>
     <div style="display:flex;gap:10px;margin-top:16px">
-      <a class="btn btn-green" style="flex:1" href="#/new">${ic('plus')} Post my first house</a>
-      <a class="btn btn-outline" style="flex:1" href="#/profile">${ic('shield')} Verify me</a>
+      <a class="btn btn-green" style="flex:1" href="#/new">${ic('plus')} ${esc(t('welc_post_btn'))}</a>
+      <a class="btn btn-outline" style="flex:1" href="#/profile">${ic('shield')} ${esc(t('welc_verify_btn'))}</a>
     </div>`;
   v.innerHTML = `
     <div class="auth-wrap" style="max-width:640px"><div class="auth-card">
       <div class="auth-brand">
         <img class="auth-logo" src="/icons/icon-192.png" alt="HuntIn" width="54" height="54">
-        <div class="auth-name">Welcome to Hunt<b>In</b>${hi}!</div>
-        <p class="auth-tag">${isLL ? 'Your account is ready — here is how to rent out fast and safe.' : 'Your account is ready — here is how to find a house safely.'}</p>
+        <div class="auth-name">${esc(t('welc_to'))} Hunt<b>In</b>${hi}!</div>
+        <p class="auth-tag">${isLL ? esc(t('welc_ll_sub')) : esc(t('welc_sk_sub'))}</p>
       </div>
       ${isLL ? landlord : seeker}
     </div></div>`;

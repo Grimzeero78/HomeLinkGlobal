@@ -12,13 +12,12 @@ const LBLANK = () => ({
   availableFrom: 'Available now', contactPhone: '', photos: [], thumbs: [],
 });
 
-const WIZ_STEPS = ['Basics', 'Location', 'Pricing', 'Utilities', 'Inside', 'Tenants', 'Availability', 'Photos'];
+const WIZ_STEPS = ['w_basics', 'w_location', 'w_pricing', 'w_utilities', 'w_inside', 'w_tenants', 'w_avail', 'w_photos']; // i18n keys — translated at render time
 
 async function viewCreate(id) {
   if (!state.user) { location.hash = '#/login'; return; }
   if (state.user.role !== 'LANDLORD') {
-    document.getElementById('view').innerHTML = emptyBox('Landlords only',
-      'Only landlord accounts can post listings. Create a landlord account to list your rooms.');
+    document.getElementById('view').innerHTML = emptyBox(t('ll_only_t'), t('ll_only_d'));
     return;
   }
   const v = document.getElementById('view');
@@ -30,7 +29,7 @@ async function viewCreate(id) {
     v.innerHTML = `<div class="pageload"><div class="skel" style="height:200px"></div><div class="skel" style="height:60px"></div></div>`;
     const r = await api('/listings/' + id);
     if (stale(gen)) return;
-    if (!r.ok || !r.isOwner) { v.innerHTML = emptyBox('Cannot edit', r.error || 'Not your listing.'); return; }
+    if (!r.ok || !r.isOwner) { v.innerHTML = emptyBox(t('cant_edit'), r.error || t('not_yours')); return; }
     L = { ...L, ...r.listing, security: parseSecurity(r.listing.security),
       photos: (r.photos || []).map(p => p.url), thumbs: (r.photos || []).map(p => p.thumb || '') };
     // normalize pre-v3 wording into the new nationwide fields (bath = count, ensuite/kitchen = Yes/No)
@@ -44,122 +43,122 @@ async function viewCreate(id) {
 
   const yesNo = (k, label) => `
     <label class="lbl">${label}</label>
-    <div class="seg" data-k="${k}"><button type="button" data-v="No" class="${L[k] !== 'Yes' ? 'on' : ''}">No</button><button type="button" data-v="Yes" class="${L[k] === 'Yes' ? 'on' : ''}">Yes</button></div>`;
+    <div class="seg" data-k="${k}"><button type="button" data-v="No" class="${L[k] !== 'Yes' ? 'on' : ''}">${esc(t('no_b'))}</button><button type="button" data-v="Yes" class="${L[k] === 'Yes' ? 'on' : ''}">${esc(t('yes_b'))}</button></div>`;
   const sel = (k, label, opts, hint) => `
     <label class="lbl">${label}</label>
-    <select class="inp" data-k="${k}">${opts.map(o => `<option ${L[k] === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>
+    <select class="inp" data-k="${k}">${opts.map(o => `<option value="${esc(o)}" ${L[k] === o ? 'selected' : ''}>${esc(tv(o))}</option>`).join('')}</select>
     ${hint ? `<p class="hint-t">${hint}</p>` : ''}`;
   const txt = (k, label, ph, type = 'text') => `
     <label class="lbl">${label}</label>
     <input class="inp" data-k="${k}" type="${type}" ${type === 'number' ? 'min="0"' : ''} placeholder="${esc(ph || '')}" value="${esc(L[k] == null ? '' : L[k])}">`;
 
   const STEPS = [
-    { t: 'Property basics', html: () => `
-      ${txt('title', 'Listing title', 'e.g. Bright 1 Bedroom — Dubai Marina')}
-      ${sel('ptype', 'Property type', TYPES)}
-      <label class="lbl">Country <span style="font-weight:500">(renters browse and filter by country)</span></label>
+    { t: t('w_basics'), html: () => `
+      ${txt('title', t('title_l'), t('title_ph'))}
+      ${sel('ptype', t('f_type'), TYPES)}
+      <label class="lbl">${esc(t('country_l'))} <span style="font-weight:500">${esc(t('country_note'))}</span></label>
       <button type="button" class="inp country-pick" id="cp-btn" style="display:flex;align-items:center;gap:10px;text-align:left">
-        ${L.country ? flagImg(L.country) + '<b style="flex:1">' + esc(L.country) + '</b><span style="display:inline-flex;transform:rotate(90deg);color:var(--ink3)">' + ic('chev') + '</span>' : '<span style="flex:1;color:var(--ink3)">Choose the country…</span><span style="display:inline-flex;transform:rotate(90deg);color:var(--ink3)">' + ic('chev') + '</span>'}
+        ${L.country ? flagImg(L.country) + '<b style="flex:1">' + esc(L.country) + '</b><span style="display:inline-flex;transform:rotate(90deg);color:var(--ink3)">' + ic('chev') + '</span>' : '<span style="flex:1;color:var(--ink3)">' + esc(t('choose_country_ph')) + '</span><span style="display:inline-flex;transform:rotate(90deg);color:var(--ink3)">' + ic('chev') + '</span>'}
       </button>
-      <label class="lbl">City</label>
-      <input class="inp" data-k="town" list="city-list" placeholder="e.g. Dubai, London, Lagos" value="${esc(L.town == null ? '' : L.town)}">
+      <label class="lbl">${esc(t('city_l'))}</label>
+      <input class="inp" data-k="town" list="city-list" placeholder="${esc(t('city_ph'))}" value="${esc(L.town == null ? '' : L.town)}">
       <datalist id="city-list">${CITIES.map(c => `<option value="${esc(c.n)}">${esc(c.c)}</option>`).join('')}</datalist>
-      <p class="hint-t">Boosts are targeted to the country — renters browsing ${esc(L.country || 'your country')} see boosted houses on top.</p>
-      ${txt('units', 'Total units in the compound', 'e.g. 6', 'number')}
-      <p class="hint-t">Renters see exactly how many units are vacant — start with all of them vacant, then update the count anytime in <b>My listings</b> as houses fill.</p>
-      ${sel('furnishing', 'Furnishing', FURN)}
-      ${txt('floor', 'Floor number', 'e.g. 0 = ground, 14 = 14th floor (any number OK)', 'number')}
+      <p class="hint-t">${esc(t('boost_target_hint').replace('{c}', L.country || t('your_country')))}</p>
+      ${txt('units', t('units_l'), '6', 'number')}
+      <p class="hint-t">${t('units_hint')}</p>
+      ${sel('furnishing', t('furnishing_l'), FURN)}
+      ${txt('floor', t('floor_l'), t('floor_ph'), 'number')}
       <p class="hint-t">${esc(t('floor_hint'))}</p>` },
-    { t: 'Location', html: () => `
-      ${txt('area', 'Area / neighbourhood (optional)', 'e.g. Marina, Downtown, Block C')}
-      ${txt('landmark', 'Nearest landmark (optional)', 'e.g. opposite the mall, near the metro station')}
-      ${sel('road', 'Road access', ROADS)}
+    { t: t('w_location'), html: () => `
+      ${txt('area', t('area_l'), t('area_ph'))}
+      ${txt('landmark', t('landmark_l'), t('landmark_ph'))}
+      ${sel('road', t('road_l'), ROADS)}
       <div class="sec-block" style="margin-top:14px;padding:13px">
-        <h3 style="font-size:14.5px">${ic('pin')} Pin the exact spot on Google Maps</h3>
-        <p class="hint-t">Drag the red pin to your compound gate — or tap the map and the pin jumps there. This is the same Google map renters see on your listing. Switch to <b>Satellite</b> to see houses and gates clearly.</p>
+        <h3 style="font-size:14.5px">${ic('pin')} ${esc(t('pin_exact_t'))}</h3>
+        <p class="hint-t">${t('pin_exact_d')}</p>
         <div id="pick-map" style="margin-top:10px;height:300px"></div>
         <div style="display:flex;gap:8px;margin-top:10px">
-          <input class="inp" id="pick-q" placeholder="Search a place, e.g. ${esc(L.town || 'Dubai')}" autocomplete="off">
-          <button class="btn btn-outline btn-sm" id="pick-go" type="button" style="flex:none">${ic('search')} Search</button>
+          <input class="inp" id="pick-q" placeholder="${esc(t('pick_q_ph').replace('{t}', L.town || 'Dubai'))}" autocomplete="off">
+          <button class="btn btn-outline btn-sm" id="pick-go" type="button" style="flex:none">${ic('search')} ${esc(t('search_b'))}</button>
         </div>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-          <button class="btn btn-outline btn-sm" id="pick-gps" type="button">${ic('pin')} Use my current location</button>
+          <button class="btn btn-outline btn-sm" id="pick-gps" type="button">${ic('pin')} ${esc(t('use_loc_cur'))}</button>
         </div>
         <div style="display:flex;gap:8px;margin-top:8px">
-          <input class="inp" id="pick-lat" placeholder="(optional) lat" value="${L.lat ?? ''}">
-          <input class="inp" id="pick-lng" placeholder="(optional) lng" value="${L.lng ?? ''}">
+          <input class="inp" id="pick-lat" placeholder="${esc(t('opt_lat'))}" value="${L.lat ?? ''}">
+          <input class="inp" id="pick-lng" placeholder="${esc(t('opt_lng'))}" value="${L.lng ?? ''}">
         </div>
         <p class="hint-t" id="pick-walk" style="margin-top:8px"></p>
       </div>` },
-    { t: 'Pricing', html: () => `
-      ${txt('rent', t('rent_l') + (L.country ? ' (' + (curSym(L.country) || curCode(L.country)) + ' — ' + esc(L.country) + ')' : ''), 'e.g. 650', 'number')}
-      ${sel('period', 'Payment period', PERIODS)}
-      ${txt('deposit', t('deposit_l') + (L.country ? ' (' + (curSym(L.country) || curCode(L.country)) + ')' : '') + ' — optional', 'leave empty if none', 'number')}
-      ${txt('fees', 'Move-in fees (optional)', 'e.g. Water connection ' + (curSym(L.country) || '$') + '20 — or "None"')}
-      <label class="check"><input type="checkbox" id="w-neg" ${L.negotiable ? 'checked' : ''}> Rent is negotiable</label>
-      <label class="lbl">Payment terms & house rules (optional)</label>
-      <textarea class="inp" data-k="terms" placeholder="e.g. Rent due by 5th of the month. One month deposit."> ${esc(L.terms)}</textarea>` },
-    { t: 'Utilities', html: () => `
-      ${sel('water', 'Water', WATER)}
-      <div id="w-wcost">${txt('waterCost', 'Water cost', 'e.g. $10 per month — optional')}</div>
-      <div id="w-sched-box">${txt('waterSched', 'Water schedule (if rationed)', 'e.g. Tuesday & Friday evenings')}</div>
-      ${yesNo('waterTank', 'Has storage tank / backup tank?')}
-      ${sel('elec', 'Electricity', ELEC)}
-      <div id="w-ecost">${txt('elecCost', 'Electricity cost', 'e.g. $15 per month, shared — optional')}</div>
-      <p class="hint-t">Prepaid meter? Leave the cost empty — each tenant tops up their own meter.</p>
-      ${sel('wifi', 'WiFi / internet', WIFI)}
-      <div id="w-wificost">${txt('wifiCost', 'WiFi cost', 'e.g. $15 per month shared — optional')}</div>
-      ${txt('wifiProvider', 'WiFi provider (optional)', 'e.g. Starlink, Jio, Comcast, local ISP')}
-      ${sel('garbage', 'Garbage disposal', GARBAGE)}
-      ${sel('backup', 'Backup power', BACKUP)}` },
-    { t: 'Inside the unit', html: () => `
-      ${sel('bath', 'Bathrooms', BATHS)}
-      ${yesNo('ensuite', 'Own bathroom (en-suite)?')}
-      ${yesNo('kitchen', 'Own kitchen inside the unit?')}
-      ${yesNo('parking', 'Parking space available?')}
-      ${yesNo('balcony', 'Balcony?')}
-      ${sel('tile', 'Floor finish', ['Tiled', 'Not tiled'])}
-      ${yesNo('ceiling', 'Ceiling board?')}
-      ${yesNo('wardrobe', 'Built-in wardrobes?')}
-      ${yesNo('hotShower', 'Hot shower?')}` },
-    { t: 'Security & tenants', html: () => `
-      <label class="lbl">Security (choose all that apply)</label>
-      <div class="chips" id="w-sec">${SECURITY.map(s => `<button type="button" class="chip ${L.security.includes(s) ? 'on' : ''}" data-v="${esc(s)}">${esc(s)}</button>`).join('')}</div>
-      ${sel('tenantPref', 'Preferred tenants (optional)', TENANTS, 'Who the house suits best — leave as Anyone if there is no preference')}
-      ${yesNo('pets', 'Pets allowed?')}` },
-    { t: 'Availability & contact', html: () => `
-      <label class="lbl">Available from</label>
-      <select class="inp" id="w-avail">${AVAIL_OPTIONS.map(o => `<option ${L.availableFrom === o || (!AVAIL_OPTIONS.includes(L.availableFrom) && o === 'Available now' && !L.availableFrom) ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>
+    { t: t('w_pricing'), html: () => `
+      ${txt('rent', t('rent_l') + (L.country ? ' (' + (curSym(L.country) || curCode(L.country)) + ' — ' + esc(L.country) + ')' : ''), '650', 'number')}
+      ${sel('period', t('period_l'), PERIODS)}
+      ${txt('deposit', t('deposit_l') + (L.country ? ' (' + (curSym(L.country) || curCode(L.country)) + ')' : '') + ' — optional', t('dep_ph'), 'number')}
+      ${txt('fees', t('fees_l'), t('fees_ph').replace('{s}', curSym(L.country) || '$'))}
+      <label class="check"><input type="checkbox" id="w-neg" ${L.negotiable ? 'checked' : ''}> ${esc(t('negotiable_check'))}</label>
+      <label class="lbl">${esc(t('terms_l'))}</label>
+      <textarea class="inp" data-k="terms" placeholder="${esc(t('terms_ph'))}"> ${esc(L.terms)}</textarea>` },
+    { t: t('w_utilities'), html: () => `
+      ${sel('water', t('water_l'), WATER)}
+      <div id="w-wcost">${txt('waterCost', t('water_cost_l'), t('water_cost_ph').replace(/\{s\}/g, curSym(L.country) || '$'))}</div>
+      <div id="w-sched-box">${txt('waterSched', t('wsched_l'), t('wsched_ph'))}</div>
+      ${yesNo('waterTank', t('tank_q'))}
+      ${sel('elec', t('electricity_l'), ELEC)}
+      <div id="w-ecost">${txt('elecCost', t('elec_cost_l'), t('elec_cost_ph').replace(/\{s\}/g, curSym(L.country) || '$'))}</div>
+      <p class="hint-t">${esc(t('prepaid_hint'))}</p>
+      ${sel('wifi', t('wifi_l'), WIFI)}
+      <div id="w-wificost">${txt('wifiCost', t('wifi_cost_l'), t('wifi_cost_ph').replace(/\{s\}/g, curSym(L.country) || '$'))}</div>
+      ${txt('wifiProvider', t('wifi_prov_l'), t('wifi_prov_ph'))}
+      ${sel('garbage', t('garbage_l'), GARBAGE)}
+      ${sel('backup', t('backup_l'), BACKUP)}` },
+    { t: t('w_inside'), html: () => `
+      ${sel('bath', t('bath_l'), BATHS)}
+      ${yesNo('ensuite', t('ens_q'))}
+      ${yesNo('kitchen', t('kit_q'))}
+      ${yesNo('parking', t('park_q'))}
+      ${yesNo('balcony', t('balc_q'))}
+      ${sel('tile', t('floor_finish'), ['Tiled', 'Not tiled'])}
+      ${yesNo('ceiling', t('ceil_q'))}
+      ${yesNo('wardrobe', t('ward_q'))}
+      ${yesNo('hotShower', t('shower_q'))}` },
+    { t: t('sec_t'), html: () => `
+      <label class="lbl">${esc(t('sec_choose'))}</label>
+      <div class="chips" id="w-sec">${SECURITY.map(s => `<button type="button" class="chip ${L.security.includes(s) ? 'on' : ''}" data-v="${esc(s)}">${esc(tv(s))}</button>`).join('')}</div>
+      ${sel('tenantPref', t('pref_l'), TENANTS, esc(t('pref_hint')))}
+      ${yesNo('pets', t('pets_q'))}` },
+    { t: t('w_avail_contact'), html: () => `
+      <label class="lbl">${esc(t('avail_from'))}</label>
+      <select class="inp" id="w-avail">${AVAIL_OPTIONS.map(o => `<option value="${esc(o)}" ${L.availableFrom === o || (!AVAIL_OPTIONS.includes(L.availableFrom) && o === 'Available now' && !L.availableFrom) ? 'selected' : ''}>${esc(tv(o))}</option>`).join('')}</select>
       <div id="w-avail-date" style="display:none">
         <input class="inp" type="date" data-k="availableFrom" value="${/^\d{4}-\d{2}-\d{2}/.test(L.availableFrom || '') ? esc(L.availableFrom) : ''}">
       </div>
-      <p class="hint-t">Pick "Available now" if the room is vacant today.</p>
-      ${txt('contactPhone', 'Contact phone / WhatsApp (optional)', 'Include country code, e.g. +44 7700 900123')}
-      <div class="notice notice-g" style="margin-top:14px">${ic('shield')}<span>Your number is only shown to signed-in users. HuntIn never collects any payment on your behalf.</span></div>` },
-    { t: 'Photos & publish', html: () => `
-      <label class="lbl">Photos (3–8) — first photo is the cover</label>
+      <p class="hint-t">${esc(t('avail_hint'))}</p>
+      ${txt('contactPhone', t('contact_l2'), t('contact_ph'))}
+      <div class="notice notice-g" style="margin-top:14px">${ic('shield')}<span>${esc(t('phone_priv'))}</span></div>` },
+    { t: t('w_photos_pub'), html: () => `
+      <label class="lbl">${esc(t('photos_l'))}</label>
       <div class="photo-grid" id="w-photos"></div>
       <input type="file" id="w-file" accept="image/*" multiple hidden>
-      <p class="hint-t" style="margin-top:8px">Photos are compressed in your browser before upload. Add clear daylight photos — listings with good photos get 3× more chats.</p>
-      <div class="sec-block" style="margin-top:14px"><h3>Review</h3><div id="w-review"></div></div>` },
+      <p class="hint-t" style="margin-top:8px">${esc(t('photos_hint'))}</p>
+      <div class="sec-block" style="margin-top:14px"><h3>${esc(t('review_t'))}</h3><div id="w-review"></div></div>` },
   ];
 
   function render() {
     const st = STEPS[step];
     v.innerHTML = `
       <div class="wiz-progress">
-        <span class="wiz-step">Step ${step + 1}/8</span>
+        <span class="wiz-step">${esc(t('step_of').replace('{n}', step + 1))}</span>
         <div class="wiz-bar"><i style="width:${((step + 1) / 8) * 100}%"></i></div>
         <span class="wiz-step">${esc(st.t)}</span>
       </div>
       <div class="wiz-steps">${WIZ_STEPS.map((nm, i) =>
-        `<button type="button" class="ws ${i === step ? 'on' : (i < step ? 'done' : '')}" data-step="${i}" aria-label="Go to section ${i + 1}: ${esc(nm)}"><b>${i + 1}</b> ${esc(nm)}</button>`).join('')}</div>
+        `<button type="button" class="ws ${i === step ? 'on' : (i < step ? 'done' : '')}" data-step="${i}"><b>${i + 1}</b> ${esc(t(nm))}</button>`).join('')}</div>
       <div class="wiz-card"><h2>${esc(st.t)}</h2><div id="wiz-fields">${st.html()}</div>
-        ${editingId && step < 7 ? `<button class="btn btn-outline btn-block" id="wz-save" style="margin-top:14px">${ic('check')} Save changes now</button>
-        <p class="hint-t" style="margin-top:6px">Editing — jump to any section above and save from there. No need to walk through all 8 steps.</p>` : ''}
+        ${editingId && step < 7 ? `<button class="btn btn-outline btn-block" id="wz-save" style="margin-top:14px">${ic('check')} ${esc(t('save_now'))}</button>
+        <p class="hint-t" style="margin-top:6px">${esc(t('editing_hint'))}</p>` : ''}
         <div class="wiz-nav">
-          ${step > 0 ? '<button class="btn btn-outline" id="wz-back">Back</button>' : '<button class="btn btn-outline" id="wz-cancel">Cancel</button>'}
-          <button class="btn btn-green" id="wz-next">${step === 7 ? (editingId ? 'Save changes' : 'Publish listing') : 'Next'}</button>
+          ${step > 0 ? `<button class="btn btn-outline" id="wz-back">${esc(t('back'))}</button>` : `<button class="btn btn-outline" id="wz-cancel">${esc(t('cancel'))}</button>`}
+          <button class="btn btn-green" id="wz-next">${step === 7 ? (editingId ? esc(t('save_changes')) : esc(t('publish'))) : esc(t('next'))}</button>
         </div>
       </div>`;
 
@@ -243,12 +242,12 @@ async function viewCreate(id) {
   }
 
   function validate(s) {
-    if (s === 0) { if ((L.title || '').trim().length < 4) return 'Give your listing a title (at least 4 characters)'; if (!L.ptype) return 'Choose the property type'; if (!L.country) return 'Choose the country'; if (!(L.town || '').trim()) return 'Enter the city'; }
+    if (s === 0) { if ((L.title || '').trim().length < 4) return t('v_title'); if (!L.ptype) return t('v_ptype'); if (!L.country) return t('v_country'); if (!(L.town || '').trim()) return t('v_city'); }
     if (s === 2) {
-      if (!L.rent || Number(L.rent) < 1) return 'Enter the rent';
-      if ((L.contactPhone || state.user.phone || '').replace(/[\s-]/g, '').length < 9) return 'Add a valid contact phone number';
+      if (!L.rent || Number(L.rent) < 1) return t('v_rent');
+      if ((L.contactPhone || state.user.phone || '').replace(/[\s-]/g, '').length < 9) return t('v_phone');
     }
-    if (s === 7 && L.photos.length < 3) return 'Add at least 3 photos';
+    if (s === 7 && L.photos.length < 3) return t('v_photos');
     return null;
   }
 
@@ -262,7 +261,7 @@ async function viewCreate(id) {
     const setPos = (lat, lng, move) => {
       L.lat = +(+lat).toFixed(6); L.lng = +(+lng).toFixed(6);
       latIn.value = L.lat; lngIn.value = L.lng;
-      statusEl.innerHTML = `${ic('check')} Spot pinned — renters will see this exact spot on the map.${L.town ? '' : ' <b>Tip:</b> pick the country & city on Step 1 so renters can find it.'}`;
+      statusEl.innerHTML = `${ic('check')} ${esc(t('spot_pinned'))}${L.town ? '' : ' ' + t('spot_tip')}`;
       if (!M) return; // map still loading — the coordinates are saved, the pin appears once it loads
       // NOTE: inside the wizard `L` is the listing object, so Leaflet must be reached via window.L
       if (!pin) {
@@ -275,7 +274,7 @@ async function viewCreate(id) {
         pin.on('dragend', () => {
           const p = pin.getLatLng();
           setPos(p.lat, p.lng, false);
-          toast('Pin moved — spot saved');
+          toast(t('pin_moved'));
         });
       } else {
         pin.setLatLng([L.lat, L.lng]);
@@ -285,11 +284,11 @@ async function viewCreate(id) {
     latIn.addEventListener('change', () => { if (latIn.value && lngIn.value) setPos(latIn.value, lngIn.value, true); });
     lngIn.addEventListener('change', () => { if (latIn.value && lngIn.value) setPos(latIn.value, lngIn.value, true); });
     v.querySelector('#pick-gps').onclick = () => {
-      if (!navigator.geolocation) { toast('Geolocation is not supported on this device', true); return; }
-      toast('Getting your location…');
+      if (!navigator.geolocation) { toast(t('geo_unsupported'), true); return; }
+      toast(t('getting_loc'));
       navigator.geolocation.getCurrentPosition(
         p => setPos(p.coords.latitude, p.coords.longitude, true),
-        () => toast('Could not get your location — check location permission', true)
+        () => toast(t('loc_fail'), true)
       );
     };
     // place search: local world-city gazetteer first (instant), worldwide Nominatim fallback
@@ -297,10 +296,10 @@ async function viewCreate(id) {
     const doSearch = async () => {
       const raw = qIn.value.trim();
       if (!raw) return;
-      goBtn.disabled = true; toast('Searching…');
+      goBtn.disabled = true; toast(t('searching'));
       const hit = await searchPlaces(raw);
       goBtn.disabled = false;
-      if (!hit) { toast('Place not found — try the map or GPS instead', true); return; }
+      if (!hit) { toast(t('place_nf2'), true); return; }
       setPos(hit.lat, hit.lng, true);
     };
     goBtn.onclick = doSearch;
@@ -321,7 +320,7 @@ async function viewCreate(id) {
       if (L.lat != null) setPos(L.lat, L.lng, false);
       setTimeout(() => M.map.invalidateSize(), 60);
     }).catch(() => {
-      box.innerHTML = '<div class="notice notice-o">Map could not load — check your internet connection and reopen this step.</div>';
+      box.innerHTML = `<div class="notice notice-o">${esc(t('map_load_fail'))}</div>`;
     });
   }
 
@@ -332,8 +331,8 @@ async function viewCreate(id) {
     const draw = () => {
       grid.innerHTML = L.photos.map((src, i) => `
         <div class="photo-cell"><img src="${src}"><button class="photo-x" data-i="${i}" type="button">✕</button>
-          ${i === 0 ? '<span class="mini-tag" style="position:absolute;bottom:4px;left:4px">Cover</span>' : ''}</div>`).join('')
-        + (L.photos.length < 8 ? `<button class="photo-add" id="ph-add" type="button">${ic('camera')}<span>Add photo</span></button>` : '');
+          ${i === 0 ? `<span class="mini-tag" style="position:absolute;bottom:4px;left:4px">${esc(t('cover_b'))}</span>` : ''}</div>`).join('')
+        + (L.photos.length < 8 ? `<button class="photo-add" id="ph-add" type="button">${ic('camera')}<span>${esc(t('add_photo'))}</span></button>` : '');
       grid.querySelectorAll('.photo-x').forEach(b => b.onclick = () => { const i = +b.dataset.i; L.photos.splice(i, 1); L.thumbs.splice(i, 1); draw(); });
       grid.querySelector('#ph-add').onclick = () => fileIn.click();
       drawReview();
@@ -341,8 +340,8 @@ async function viewCreate(id) {
     fileIn.onchange = async () => {
       const files = [...fileIn.files].filter(f => f.type.startsWith('image/'));
       for (const f of files) {
-        if (L.photos.length >= 8) { toast('Maximum 8 photos', true); break; }
-        toast('Processing photo…');
+        if (L.photos.length >= 8) { toast(t('max_photos'), true); break; }
+        toast(t('processing'));
         try {
           const full = await compressTo(f, 150, 1150, 0.72);
           let th = '';
@@ -356,14 +355,14 @@ async function viewCreate(id) {
     function drawReview() {
       const rv = v.querySelector('#w-review'); if (!rv) return;
       const rows = [
-        ['Title', L.title], ['Type', L.ptype], ['Location', [L.town, L.country].filter(Boolean).join(', ')],
-        ['Area', L.area ? L.area + (L.landmark ? ' — ' + L.landmark : '') : ''],
-        ['Rent', L.rent ? cur(L.rent, L.country) + ' / ' + (L.period || '').toLowerCase() : ''],
-        ['Deposit', L.deposit ? cur(L.deposit, L.country) : 'None'],
-        ['Water', L.water], ['Electricity', L.elec], ['WiFi', L.wifi], ['Bathrooms', L.bath],
-        ['Own bathroom', L.ensuite === 'Yes' ? 'Yes' : ''], ['Own kitchen', L.kitchen === 'Yes' ? 'Yes' : ''],
-        ['Parking', L.parking === 'Yes' ? 'Yes' : ''],
-        ['Preferred tenants', L.tenantPref], ['Pets', L.pets], ['Available', L.availableFrom || 'Now'], ['Photos', L.photos.length + ' added'],
+        [t('rev_title'), L.title], [t('type_l'), tv(L.ptype)], [t('location_t'), [L.town, L.country].filter(Boolean).join(', ')],
+        [t('area_s'), L.area ? L.area + (L.landmark ? ' — ' + L.landmark : '') : ''],
+        [t('rent_l'), L.rent ? cur(L.rent, L.country) + ' / ' + perLong(L.period) : ''],
+        [t('deposit_l'), L.deposit ? cur(L.deposit, L.country) : t('none_b')],
+        [t('water_l'), tv(L.water)], [t('electricity_l'), tv(L.elec)], ['WiFi', tv(L.wifi)], [t('bath_l'), L.bath],
+        [t('own_bath'), L.ensuite === 'Yes' ? t('yes_b') : ''], [t('own_kitchen'), L.kitchen === 'Yes' ? t('yes_b') : ''],
+        [t('parking_l'), L.parking === 'Yes' ? t('yes_b') : ''],
+        [t('pref_tenants'), tv(L.tenantPref)], [t('pets_l'), tv(L.pets)], [t('avail_from'), L.availableFrom ? tv(L.availableFrom) : t('now_b')], [t('w_photos'), t('n_added').replace('{n}', L.photos.length)],
       ];
       rv.innerHTML = rows.filter(r2 => r2[1]).map(r2 => `<div class="rev-row"><span class="k">${r2[0]}</span><span class="v">${esc(r2[1])}</span></div>`).join('');
     }
@@ -375,7 +374,7 @@ async function viewCreate(id) {
     // quick required-field check before saving from the middle of the wizard
     for (const s of [0, 1, 2]) { const err = validate(s); if (err) { toast(err, true); return; } }
     const bHtml = b.innerHTML;
-    b.disabled = true; b.textContent = editingId ? 'Saving…' : 'Publishing…';
+    b.disabled = true; b.textContent = editingId ? t('saving') : t('publishing');
     if (!L.contactPhone) L.contactPhone = state.user.phone || '';
     // clear costs that don't apply (keeps listings honest and tidy)
     if (L.water === 'Included in rent') L.waterCost = '';
@@ -394,7 +393,7 @@ async function viewCreate(id) {
       ? await api('/listings/' + editingId, { method: 'PUT', body })
       : await api('/listings', { body });
     if (res.ok) {
-      toast(editingId ? 'Listing updated' : 'Listing published!');
+      toast(editingId ? t('listing_updated') : t('listing_published'));
       location.hash = '#/listing/' + (editingId || res.id);
     } else { toast(res.error, true); b.disabled = false; b.innerHTML = bHtml; }
   }

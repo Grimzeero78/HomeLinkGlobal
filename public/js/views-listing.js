@@ -43,15 +43,15 @@ async function viewListing(id) {
         <span class="wm" style="z-index:2"></span>
         <img id="gal-img" src="${photos[0].url}" alt="${esc(l.title)}">
         ${photos.length > 1 ? `
-          <button class="gal-nav prev" id="gal-prev" aria-label="Previous photo">${ic('back')}</button>
-          <button class="gal-nav next" id="gal-next" aria-label="Next photo" style="transform:translateY(-50%) scaleX(-1)">${ic('back')}</button>
+          <button class="gal-nav prev" id="gal-prev" aria-label="${esc(t('back'))}">${ic('back')}</button>
+          <button class="gal-nav next" id="gal-next" aria-label="${esc(t('next'))}" style="transform:translateY(-50%) scaleX(-1)">${ic('back')}</button>
           <div class="gal-count" id="gal-count">1/${photos.length}</div>` : ''}
       </div>
       <div class="gal-thumbs">${photos.map((p, i) => `<img src="${p.url}" data-i="${i}" class="${i === 0 ? 'on' : ''}" alt="">`).join('')}</div>` : ''}
       <div class="dhead">
-        <div class="dprice">${cur(l.rent, l.country)}<span> /${perShort(l.period).replace('sem', 'semester').replace('yr', 'year').replace('mo', 'month')}</span></div>
+        <div class="dprice">${cur(l.rent, l.country)}<span> /${esc(perLong(l.period))}</span></div>
         <div class="dtitle">${esc(l.title)}</div>
-        <div class="dmeta">${ic('pin')} ${esc(l.town || 'Worldwide')}${l.country ? ', ' + flagImg(l.country) + ' ' + esc(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''}${l.landmark ? ' · ' + esc(l.landmark) : ''}${dl ? ` · <b style="color:var(--pine-accent)">${esc(dl)}</b>` : ''}</div>
+        <div class="dmeta">${ic('pin')} ${esc(l.town || t('worldwide'))}${l.country ? ', ' + flagImg(l.country) + ' ' + esc(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''}${l.landmark ? ' · ' + esc(l.landmark) : ''}${dl ? ` · <b style="color:var(--pine-accent)">${esc(dl)}</b>` : ''}</div>
         <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
           ${boosted ? `<span class="pill pill-o">${ic('bolt')}${esc(t('boosted_p'))}</span>` : ''}
           ${verified ? `<span class="pill pill-g">${ic('shield')}${esc(t('verified_ll'))}</span>` : ''}
@@ -68,12 +68,12 @@ async function viewListing(id) {
       </div>
 
       <div class="sec-block"><h3>${esc(t('key_facts'))}</h3><div class="dgrid">
-        <div class="dcell"><div class="k">${esc(t('type_l'))}</div><div class="v">${esc(l.ptype)}</div></div>
+        <div class="dcell"><div class="k">${esc(t('type_l'))}</div><div class="v">${esc(tv(l.ptype))}</div></div>
         <div class="dcell"><div class="k">${esc(t('units_l'))}</div><div class="v">${l.units}</div></div>
         <div class="dcell"><div class="k">${esc(t('vacant_now'))}</div><div class="v">${vac.full ? t('vac_zero') : (vac.u > 1 ? vac.v + ' / ' + vac.u : t('vac_this'))}</div></div>
-        <div class="dcell"><div class="k">${esc(t('furnishing_l'))}</div><div class="v">${esc(l.furnishing)}</div></div>
+        <div class="dcell"><div class="k">${esc(t('furnishing_l'))}</div><div class="v">${esc(tv(l.furnishing))}</div></div>
         <div class="dcell"><div class="k">${esc(t('floor_n'))}</div><div class="v">${esc(floorLabel(l.floor))}</div></div>
-        <div class="dcell"><div class="k">${esc(t('road_l'))}</div><div class="v">${esc(l.road)}</div></div>
+        <div class="dcell"><div class="k">${esc(t('road_l'))}</div><div class="v">${esc(tv(l.road))}</div></div>
         <div class="dcell"><div class="k">${esc(t('avail_from'))}</div><div class="v">${fmtAvail(l.availableFrom)}</div></div>
       </div></div>
 
@@ -88,13 +88,13 @@ async function viewListing(id) {
       </div>
 
       <div class="sec-block"><h3>${esc(t('utilities_t'))}</h3>
-        ${kv(t('water_l'), esc(l.water) + (l.waterCost && l.water !== 'Included in rent' ? ' · ' + esc(l.waterCost) : ''))}
+        ${kv(t('water_l'), esc(tv(l.water)) + (l.waterCost && l.water !== 'Included in rent' ? ' · ' + esc(l.waterCost) : ''))}
         ${l.water === 'Rationed' && l.waterSched ? kv(t('water_sched'), esc(l.waterSched)) : ''}
         ${kv(t('tank_l'), y(l.waterTank))}
-        ${kv(t('electricity_l'), esc(l.elec) + (l.elecCost && !['Included in rent', 'Own meter', 'Prepaid'].includes(l.elec) ? ' · ' + esc(l.elecCost) : ''))}
-        ${kv(t('wifi_l'), esc(l.wifi) + (l.wifiCost && l.wifi === 'Available but paid separately' ? ' · ' + esc(l.wifiCost) : '') + (l.wifiProvider ? ' (' + esc(l.wifiProvider) + ')' : ''))}
-        ${kv(t('garbage_l'), esc(l.garbage))}
-        ${kv(t('backup_l'), esc(l.backup))}
+        ${kv(t('electricity_l'), esc(tv(l.elec)) + (l.elecCost && !['Included in rent', 'Own meter', 'Prepaid'].includes(l.elec) ? ' · ' + esc(l.elecCost) : ''))}
+        ${kv(t('wifi_l'), esc(tv(l.wifi)) + (l.wifiCost && l.wifi === 'Available but paid separately' ? ' · ' + esc(l.wifiCost) : '') + (l.wifiProvider ? ' (' + esc(l.wifiProvider) + ')' : ''))}
+        ${kv(t('garbage_l'), esc(tv(l.garbage)))}
+        ${kv(t('backup_l'), esc(tv(l.backup)))}
       </div>
 
       <div class="sec-block"><h3>${esc(t('inside_t'))}</h3>
@@ -111,14 +111,14 @@ async function viewListing(id) {
 
       <div class="sec-block"><h3>${esc(t('sec_t'))}</h3>
         <div class="chips" style="margin-bottom:10px">
-          ${(parseSecurity(l.security).length ? parseSecurity(l.security) : [t('not_specified')]).map(s => `<span class="chip" style="pointer-events:none">${esc(s)}</span>`).join('')}
+          ${(parseSecurity(l.security).length ? parseSecurity(l.security) : [t('not_specified')]).map(s => `<span class="chip" style="pointer-events:none">${esc(tv(s))}</span>`).join('')}
         </div>
-        ${kv(t('pref_tenants'), esc(l.tenantPref || t('anyone')))}
+        ${kv(t('pref_tenants'), esc(l.tenantPref ? tv(l.tenantPref) : t('anyone')))}
         ${kv(t('pets_l'), y(l.pets))}
       </div>
 
       <div class="sec-block"><h3>${esc(t('pricing_t'))}</h3>
-        ${kv(t('rent_l'), cur(l.rent, l.country) + ' / ' + esc((l.period || '').toLowerCase()))}
+        ${kv(t('rent_l'), cur(l.rent, l.country) + ' / ' + esc(perLong(l.period)))}
         ${l.deposit ? kv(t('deposit_l'), cur(l.deposit, l.country)) : ''}
         ${kv(t('move_in_fees'), esc(l.fees || t('none_b')))}
         ${kv(t('negotiable'), l.negotiable ? t('yes_b') : t('no_b'))}
@@ -181,7 +181,7 @@ async function viewListing(id) {
         setTimeout(() => m.map.invalidateSize(), 60);
         onLeave(() => { try { m.destroy(); } catch (e) {} });
       }).catch(() => {
-        el.innerHTML = '<div class="gm-err"><div><b>Map failed to load.</b><br><span style="margin-top:6px;display:inline-block">Check your internet connection and refresh.</span></div></div>';
+        el.innerHTML = `<div class="gm-err"><div><b>${esc(t('map_fail_t'))}</b><br><span style="margin-top:6px;display:inline-block">${esc(t('map_fail_d'))}</span></div></div>`;
       });
     }
   }
@@ -229,13 +229,13 @@ function viewPrivacy() {
   document.getElementById('view').innerHTML = `
   <div class="sec-h"><h2>${esc(t('privacy_safety'))}</h2></div>
   <div class="sec-block">
-    <h3>What we store</h3>
-    <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Your username, name, phone/WhatsApp number, role, and — for landlords — the verification documents you upload. Listing photos and details you post. Chat messages you send. Nothing else. No email, no tracking pixels.</p>
-    <h3>Who can see it</h3>
-    <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Listing content is public. Your phone number is shown to signed-in users on your listings and in chats so renters can reach you. Your verification documents are only visible to the admin. Chats are only visible to you and the other person. If you share your location, it stays on your device — it is never sent to our servers.</p>
-    <h3>The golden rule</h3>
-    <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">HuntIn never collects rent, deposit, or any payment. All money matters happen face-to-face after a viewing. If anyone asks you to pay through the app or before a viewing, report them.</p>
-    <h3>Data protection</h3>
-    <p style="font-size:13.5px;color:var(--ink2)">We collect the minimum data needed to run the service. You may ask for your data to be deleted at any time — contact the site admin.</p>
+    <h3>${esc(t('pv_store_t'))}</h3>
+    <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">${esc(t('pv_store_d'))}</p>
+    <h3>${esc(t('pv_seen_t'))}</h3>
+    <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">${esc(t('pv_seen_d'))}</p>
+    <h3>${esc(t('pv_rule_t'))}</h3>
+    <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">${esc(t('pv_rule_d'))}</p>
+    <h3>${esc(t('pv_data_t'))}</h3>
+    <p style="font-size:13.5px;color:var(--ink2)">${esc(t('pv_data_d'))}</p>
   </div>`;
 }

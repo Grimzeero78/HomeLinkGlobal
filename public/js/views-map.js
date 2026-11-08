@@ -17,16 +17,16 @@ async function viewMap() {
       <button class="btn btn-primary btn-sm" id="map-go" type="button" style="flex:none">${ic('search')} ${esc(t('nav_search'))}</button>
     </div>
     <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:-2px 0 10px">
-      <button class="btn btn-outline btn-sm" id="map-loc" type="button">${ic('pin')} Use my location</button>
-      <span style="font-size:11.5px;color:var(--ink3)">Within:</span>
+      <button class="btn btn-outline btn-sm" id="map-loc" type="button">${ic('pin')} ${esc(t('use_loc'))}</button>
+      <span style="font-size:11.5px;color:var(--ink3)">${esc(t('within_l'))}</span>
       <div class="chips" id="map-rad" style="display:flex;gap:6px;flex-wrap:wrap">
-        ${Object.keys(MAP_RADIUS).map(r => `<button class="chip ${r === '' ? 'on' : ''}" data-r="${r}">${r ? r + ' km' : 'Any'}</button>`).join('')}
+        ${Object.keys(MAP_RADIUS).map(r => `<button class="chip ${r === '' ? 'on' : ''}" data-r="${r}">${r ? r + ' km' : esc(t('any_t'))}</button>`).join('')}
       </div>
     </div>
     <p class="hint-t" style="margin:-4px 0 10px">${esc(t('map_hint'))}</p>
     <div class="map-wrap">
       <div class="map-side" id="map-side">${skeletonGrid(2)}</div>
-      <div id="mapbox" class="gmap-loading"><div class="gm-err">Loading map…</div></div>
+      <div id="mapbox" class="gmap-loading"><div class="gm-err">${esc(t('loading_map'))}</div></div>
     </div>`;
 
   const r = await api('/listings?limit=100&sort=new');
@@ -86,8 +86,8 @@ async function viewMap() {
       center = p; M.setView(p.lat, p.lng, 15, true); applyFilter();
     });
   } catch (e) {
-    box.innerHTML = `<div class="gm-err"><div><b>Map failed to load.</b><br>
-      <span style="margin-top:6px;display:inline-block">Check your internet connection and try again.</span></div></div>`;
+    box.innerHTML = `<div class="gm-err"><div><b>${esc(t('map_fail_t'))}</b><br>
+      <span style="margin-top:6px;display:inline-block">${esc(t('map_fail_d'))}</span></div></div>`;
   }
 
   function highlightSide(id) {
@@ -108,7 +108,7 @@ async function viewMap() {
   function renderSide(list) {
     const side = v.querySelector('#map-side');
     if (!side) return;
-    if (!list.length) { side.innerHTML = emptyBox('Nothing on the map yet', 'Pinned houses will appear here — try a bigger radius or another city.'); return; }
+    if (!list.length) { side.innerHTML = emptyBox(t('map_empty_t'), t('map_empty_d')); return; }
     side.innerHTML = list.map(l => {
       const boosted = l.boostedUntil && l.boostedUntil > Date.now();
       const pinned = l.lat != null && l.lng != null;

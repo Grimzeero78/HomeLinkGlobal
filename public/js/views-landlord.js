@@ -76,29 +76,29 @@ async function viewBoost(id) {
   v.innerHTML = skeletonGrid(1);
   const r = await api('/listings/' + id);
   if (stale(gen)) return;
-  if (!r.ok || !r.isOwner) { v.innerHTML = emptyBox('Listing not found', 'Only the owner can boost this listing.'); return; }
+  if (!r.ok || !r.isOwner) { v.innerHTML = emptyBox(t('listing_nf'), t('boost_owner_only')); return; }
   const l = r.listing;
   const boosted = l.boostedUntil && l.boostedUntil > Date.now();
 
   v.innerHTML = `
-    <div class="sec-h"><h2>${ic('bolt')} Boost "${esc(l.title)}"</h2></div>
-    ${boosted ? `<div class="notice notice-g">${ic('check')}<span>This listing is boosted until <b>${fmtDate(l.boostedUntil)}</b> — renters browsing <b>${esc(l.country || 'its country')}</b> see it at the top.</span></div>` : ''}
+    <div class="sec-h"><h2>${ic('bolt')} ${esc(t('boost_title').replace('{t}', l.title))}</h2></div>
+    ${boosted ? `<div class="notice notice-g">${ic('check')}<span>${t('boosted_until_c').replace('{d}', fmtDate(l.boostedUntil)).replace('{c}', esc(l.country || t('your_country')))}</span></div>` : ''}
     ${!boosted ? `
     <div class="sec-block">
-      <h3>What a boost does</h3>
-      <p class="hint-t" style="margin-bottom:12px">Your listing jumps to the <b>top of results in ${esc(l.country || 'its country')}</b> with an orange BOOSTED badge for ${BOOST.days} days — on the home page, search results and the map for everyone browsing ${esc(l.country || 'that country')}. Renters in other countries are not affected unless they search ${esc(l.country || 'your country')} themselves. Boosted listings get the most views and chats.</p>
-      <h3>Free during launch</h3>
-      <p class="hint-t" style="margin-bottom:14px">No payment, no code — boosts are free while HuntIn is new. One tap and it is live.</p>
-      <button class="btn btn-primary btn-block" id="bs-go">${ic('bolt')} Boost free for ${BOOST.days} days</button>
-      <p class="hint-t" style="margin-top:10px">Rent and deposits are NEVER paid through this platform — always view the house first.</p>
+      <h3>${esc(t('boost_what_t'))}</h3>
+      <p class="hint-t" style="margin-bottom:12px">${t('boost_what_d').replace(/\{c\}/g, esc(l.country || t('your_country'))).replace('{n}', BOOST.days)}</p>
+      <h3>${esc(t('boost_free_t'))}</h3>
+      <p class="hint-t" style="margin-bottom:14px">${esc(t('boost_free_d'))}</p>
+      <button class="btn btn-primary btn-block" id="bs-go">${ic('bolt')} ${esc(t('boost_btn').replace('{n}', BOOST.days))}</button>
+      <p class="hint-t" style="margin-top:10px">${esc(t('boost_safety'))}</p>
     </div>` : ''}
-    <div style="margin-top:14px"><a class="btn btn-outline" href="#/listing/${l.id}">${ic('back')} Back to listing</a></div>`;
+    <div style="margin-top:14px"><a class="btn btn-outline" href="#/listing/${l.id}">${ic('back')} ${esc(t('back_to_listing'))}</a></div>`;
 
   const go = v.querySelector('#bs-go');
   if (go) go.onclick = async () => {
     go.disabled = true;
     const res = await api('/listings/' + id + '/boost', { body: {} });
-    if (res.ok) { toast('Boost active for ' + BOOST.days + ' days!'); viewBoost(id); }
+    if (res.ok) { toast(t('boost_active').replace('{n}', BOOST.days)); viewBoost(id); }
     else { toast(res.error, true); go.disabled = false; }
   };
 }
