@@ -113,6 +113,42 @@ await page.screenshot({ path: OUT + '/6-lang-picker-ar.png' });
 // back to English for a clean end state
 await page.click('[data-lang="en"]');
 await page.waitForTimeout(700);
+await ctx.close();
+
+// ---- 5. LOGGED OUT — globe beside the theme toggle + BOTH account options ----
+const ctx2 = await browser.newContext(VP);
+const p2 = await ctx2.newPage();
+await p2.goto(BASE + '/#/home', { waitUntil: 'domcontentloaded' });
+await p2.waitForTimeout(1600);
+// the globe must be a STATIC topbar button right beside the theme toggle
+const themeBtn = await p2.$('.topbar .theme-btn[data-theme-toggle]');
+const langBtn = await p2.$('.topbar #lang-btn');
+ok('theme toggle present in topbar', !!themeBtn);
+ok('language globe ALWAYS visible in topbar (logged out too)', !!langBtn);
+if (themeBtn && langBtn) {
+  const adjacent = await p2.evaluate(() => {
+    const th = document.querySelector('.topbar .theme-btn[data-theme-toggle]');
+    const lg = document.getElementById('lang-btn');
+    return Math.abs(th.getBoundingClientRect().left - lg.getBoundingClientRect().left) < 60;
+  });
+  ok('globe sits right beside the light/dark button', adjacent);
+}
+await p2.click('#lang-btn');
+await p2.waitForTimeout(500);
+ok('globe (logged out) opens the language picker', await p2.$('.modal') !== null);
+await p2.keyboard.press('Escape').catch(() => {});
+await p2.click('.modal-ov', { position: { x: 8, y: 8 } }).catch(() => {});
+const pills = await p2.$$eval('.top-acts a', els => els.map(e => e.textContent.trim()));
+ok('logged-out topbar shows Sign in AND Create account', pills.some(t => /sign in/i.test(t)) && pills.some(t => /create/i.test(t)), pills.join('|'));
+await p2.setViewportSize({ width: 1280, height: 860 });
+await p2.waitForTimeout(800);
+const footTxt = await p2.$eval('#sidenav-foot', e => e.textContent).catch(() => '');
+const footLinks = await p2.$$eval('#sidenav-foot a', els => els.map(e => e.getAttribute('href'))).catch(() => []);
+ok('logged-out "Signed in as" spot shows BOTH Sign in + Create account', footLinks.includes('#/login') && footLinks.includes('#/register'), footTxt.slice(0, 90).replace(/\s+/g, ' '));
+const langBtnIn = await p2.$('.topbar #lang-btn') !== null;
+ok('globe still in topbar on desktop', langBtnIn);
+await p2.screenshot({ path: OUT + '/7-logged-out-desktop.png' });
+await ctx2.close();
 
 await browser.close();
 console.log(`\n========================\n  ${pass} passed, ${fail} failed\n========================`);

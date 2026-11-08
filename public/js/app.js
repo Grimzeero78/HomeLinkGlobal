@@ -78,13 +78,17 @@ function buildNav(active) {
   const ta = document.getElementById('top-actions');
   const foot = document.getElementById('sidenav-foot');
   if (state.user) {
-    ta.innerHTML = `<button class="btn btn-outline btn-sm" id="lang-btn" title="${esc(t('pick_lang'))}">${ic('globe')}</button><a class="btn btn-outline btn-sm" href="#/profile">${esc((state.user.name || state.user.username).split(' ')[0])}</a>`;
+    ta.innerHTML = `<a class="btn btn-outline btn-sm" href="#/profile">${esc((state.user.name || state.user.username).split(' ')[0])}</a>`;
     foot.innerHTML = `Signed in as <b>${esc(state.user.username)}</b><br><button class="btn btn-ghost btn-sm" id="sn-out" style="margin-top:6px">${ic('out')} ${esc(t('signout'))}</button>`;
   } else {
-    ta.innerHTML = `<button class="btn btn-outline btn-sm" id="lang-btn" title="${esc(t('pick_lang'))}">${ic('globe')}</button><a class="btn btn-outline btn-sm" href="#/login">${esc(t('signin'))}</a><a class="btn btn-primary btn-sm" href="#/register">${esc(t('create_account'))}</a>`;
-    foot.innerHTML = `<button class="btn btn-outline btn-sm btn-block" id="sn-lang" style="margin-bottom:6px">${ic('globe')} ${esc(t('pick_lang'))}</button><a class="btn btn-green btn-sm btn-block" href="#/register">${esc(t('create_account'))}</a>`;
+    // language globe is STATIC in the topbar (right beside the theme button) — it
+    // used to be injected here and got crowded out by the two text pills on phones
+    ta.innerHTML = `<a class="btn btn-outline btn-sm" href="#/login">${esc(t('signin'))}</a><a class="btn btn-primary btn-sm" href="#/register">${esc(t('create_account'))}</a>`;
+    // logged out: BOTH entry points — a returning user must never think they
+    // have to register again (owner fix: create-account-only confused users)
+    foot.innerHTML = `<button class="btn btn-outline btn-sm btn-block" id="sn-lang" style="margin-bottom:6px">${ic('globe')} ${esc(t('pick_lang'))}</button>
+      <div style="display:flex;gap:8px;margin-top:6px"><a class="btn btn-outline btn-sm btn-block" href="#/login">${esc(t('signin'))}</a><a class="btn btn-green btn-sm btn-block" href="#/register">${esc(t('create_account'))}</a></div>`;
   }
-  const lb = document.getElementById('lang-btn'); if (lb) lb.onclick = openLangPicker;
   const slb = document.getElementById('sn-lang'); if (slb) slb.onclick = openLangPicker;
   const sout = document.getElementById('sn-out');
   if (sout) sout.onclick = async () => {
@@ -128,6 +132,10 @@ async function refreshUnread() {
   document.addEventListener('click', e => {
     if (e.target.closest('[data-theme-toggle]')) { e.preventDefault(); toggleTheme(); }
   });
+  // the language globe is static topbar markup (always visible beside the theme
+  // button, both signed-in and out) — bind it once here, never re-injected
+  const lbtn = document.getElementById('lang-btn');
+  if (lbtn) lbtn.onclick = openLangPicker;
   try {
     const [s, m, g] = await Promise.all([api('/settings'), token.get() ? api('/me') : Promise.resolve(null), api('/geo')]);
     if (s && s.ok && s.settings) state.settings = { ...state.settings, ...s.settings };
