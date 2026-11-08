@@ -30,8 +30,8 @@ function openCountryPicker(current, onPick) {
     m.querySelector('#cp-list').innerHTML = rows();
     m.querySelectorAll('.cprow').forEach(b => b.onclick = () => { closeModal(); if (onPick) onPick(b.dataset.n); });
   };
-  modal(`<h3>Choose the country</h3>
-    <input class="inp" id="cp-q" placeholder="Search countries or codes…" style="margin:10px 0 12px" autocomplete="off">
+  modal(`<h3>${esc(t('cp_t'))}</h3>
+    <input class="inp" id="cp-q" placeholder="${esc(t('cp_q'))}" style="margin:10px 0 12px" autocomplete="off">
     <div id="cp-list" style="max-height:52vh;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)"></div>`,
     m => {
       paint(m);
@@ -228,16 +228,16 @@ function confirmDlg(title, text, okLabel, cb, danger) {
 // report modal shared by listing page + chat thread
 function openReport(listingId) {
   if (!state.user) { location.hash = '#/login'; return; }
-  modal(`<h3>Report this listing</h3>
-    <label class="lbl">Reason</label>
+  modal(`<h3>${esc(t('report_t'))}</h3>
+    <label class="lbl">${esc(t('reason_l'))}</label>
     <select class="inp" id="rp-reason">${REPORT_REASONS.map(x => `<option>${esc(x)}</option>`).join('')}</select>
-    <label class="lbl">Details (optional)</label>
-    <textarea class="inp" id="rp-note" placeholder="Tell us what is wrong…"></textarea>
-    <button class="btn btn-primary btn-block" style="margin-top:14px" id="rp-send">Send report</button>`,
+    <label class="lbl">${esc(t('report_details'))}</label>
+    <textarea class="inp" id="rp-note" placeholder="${esc(t('report_ph'))}"></textarea>
+    <button class="btn btn-primary btn-block" style="margin-top:14px" id="rp-send">${esc(t('report_send'))}</button>`,
     m => m.querySelector('#rp-send').onclick = async () => {
       const res = await api('/listings/' + listingId + '/report', { body: { reason: m.querySelector('#rp-reason').value, note: m.querySelector('#rp-note').value } });
       closeModal();
-      toast(res.ok ? 'Report sent. Our team will review it.' : res.error, !res.ok);
+      toast(res.ok ? t('report_sent') : res.error, !res.ok);
     });
 }
 
@@ -248,10 +248,10 @@ function maybeStudentCaution() {
   if (acked || !state.user || state.user.role === 'LANDLORD') return;
   modal(`<div style="text-align:center;padding:4px 2px">
     <div style="width:60px;height:60px;margin:0 auto 12px;border-radius:18px;background:var(--ember-mist);color:var(--ember-deep);display:grid;place-items:center">${ic('shield')}</div>
-    <h3 style="font-family:var(--disp);font-size:19px">Before you pay anyone</h3>
-    <p style="font-size:13.5px;color:var(--ink2);line-height:1.55;margin:8px 0 12px">HuntIn never handles your rent. <b>Never send money — by transfer, app or cash — before you have physically visited the house and met the landlord or caretaker in person.</b></p>
-    <div class="notice notice-r" style="text-align:left;margin-bottom:14px">${ic('flag')}<span><b>Scam signs:</b> a "viewing fee", refusing to meet in person, or pressure to pay before you have seen the house.</span></div>
-    <button class="btn btn-green btn-block" id="ca-ok">I understand — show me houses</button>
+    <h3 style="font-family:var(--disp);font-size:19px">${esc(t('caution_t'))}</h3>
+    <p style="font-size:13.5px;color:var(--ink2);line-height:1.55;margin:8px 0 12px">${esc(t('caution_p'))}</p>
+    <div class="notice notice-r" style="text-align:left;margin-bottom:14px">${ic('flag')}<span><b>${esc(t('caution_signs_t'))}</b> ${esc(t('caution_signs_d'))}</span></div>
+    <button class="btn btn-green btn-block" id="ca-ok">${esc(t('caution_ok'))}</button>
   </div>`, m => m.querySelector('#ca-ok').onclick = () => {
     try { localStorage.setItem('hl_caution', '1'); } catch (e) {}
     closeModal();
@@ -273,24 +273,25 @@ const THEME_META = { light: '#0e5a33', dark: '#141713' };
 const THEME_NAMES = { light: 'Light mode', dark: 'Dark mode', system: 'System default' };
 const sysDark = () => { try { return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); } catch (e) { return false; } };
 function resolveTheme(mode) { return (mode === 'dark' || (mode !== 'light' && sysDark())) ? 'dark' : 'light'; }
+function themeName(mode) { return mode === 'system' ? t('theme_sys') : mode === 'dark' ? t('theme_dark') : t('theme_light'); }
 function applyTheme(mode, save) {
   if (save) { try { localStorage.setItem('hl_theme', mode); } catch (e) {} }
-  const t = resolveTheme(mode);
-  document.documentElement.dataset.theme = t;
+  const th = resolveTheme(mode);
+  document.documentElement.dataset.theme = th;
   const m = document.querySelector('meta[name="theme-color"]');
-  if (m) m.setAttribute('content', THEME_META[t]);
+  if (m) m.setAttribute('content', THEME_META[th]);
   // keep every toggle button on the page in sync (topbar, side nav, profile row).
   // Rich rows (profile) keep their own markup — we only swap the icon + state text.
   document.querySelectorAll('[data-theme-toggle]').forEach(b => {
-    const ico = ic(mode === 'system' ? 'gear' : (t === 'dark' ? 'sun' : 'moon'));
+    const ico = ic(mode === 'system' ? 'gear' : (th === 'dark' ? 'sun' : 'moon'));
     const st = b.querySelector('.theme-state');
     if (st) {
-      st.textContent = mode === 'system' ? 'System' : (t === 'dark' ? 'Dark' : 'Light');
+      st.textContent = mode === 'system' ? t('theme_sys_s') : (th === 'dark' ? t('theme_dark_s') : t('theme_light_s'));
       const sv = b.querySelector('svg');
       if (sv) sv.outerHTML = ico;
     } else {
-      b.innerHTML = `${ico}<span class="theme-lbl">${THEME_NAMES[mode] || THEME_NAMES.system}</span>`;
-      b.title = 'Theme: ' + (THEME_NAMES[mode] || THEME_NAMES.system) + ' — tap to change';
+      b.innerHTML = `${ico}<span class="theme-lbl">${themeName(mode)}</span>`;
+      b.title = t('theme') + ': ' + themeName(mode);
     }
   });
 }
@@ -305,7 +306,7 @@ function toggleTheme() {
   const order = ['light', 'dark', 'system'];
   const next = order[(order.indexOf(currentTheme()) + 1) % order.length];
   applyTheme(next, true);
-  toast('Theme: ' + THEME_NAMES[next]);
+  toast(t('theme') + ': ' + themeName(next));
 }
 
 // ---------- admin notification badges ----------

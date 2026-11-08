@@ -11,10 +11,10 @@ async function viewMap() {
   const gen = routeGen;
   const myTown = getMyTown();
   v.innerHTML = `
-    <div class="sec-h"><h2>Map of houses worldwide</h2></div>
+    <div class="sec-h"><h2>${esc(t('map_t'))}</h2></div>
     <div class="map-search">
-      <input class="inp" id="map-q" placeholder="Search a place — e.g. Dubai Marina, London, Lagos" autocomplete="off">
-      <button class="btn btn-primary btn-sm" id="map-go" type="button" style="flex:none">${ic('search')} Search</button>
+      <input class="inp" id="map-q" placeholder="${esc(t('map_ph'))}" autocomplete="off">
+      <button class="btn btn-primary btn-sm" id="map-go" type="button" style="flex:none">${ic('search')} ${esc(t('nav_search'))}</button>
     </div>
     <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:-2px 0 10px">
       <button class="btn btn-outline btn-sm" id="map-loc" type="button">${ic('pin')} Use my location</button>
@@ -23,7 +23,7 @@ async function viewMap() {
         ${Object.keys(MAP_RADIUS).map(r => `<button class="chip ${r === '' ? 'on' : ''}" data-r="${r}">${r ? r + ' km' : 'Any'}</button>`).join('')}
       </div>
     </div>
-    <p class="hint-t" style="margin:-4px 0 10px">Live world map — pan to any country, roads and shops all named. Tap a house below to fly to its exact spot, then use <b>Directions</b> in its listing to get there.</p>
+    <p class="hint-t" style="margin:-4px 0 10px">${esc(t('map_hint'))}</p>
     <div class="map-wrap">
       <div class="map-side" id="map-side">${skeletonGrid(2)}</div>
       <div id="mapbox" class="gmap-loading"><div class="gm-err">Loading map…</div></div>
@@ -56,7 +56,7 @@ async function viewMap() {
           <div style="max-width:190px">
             <b>${esc(l.title)}</b><br>
             <span style="color:var(--ink2)">${cur(l.rent, l.country)}/${perShort(l.period)} · ${esc(l.town)}${l.country ? ' · ' + flagImg(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''}${dl ? ' · ' + esc(dl) : ''}</span><br>
-            <a href="#/listing/${l.id}">Open listing →</a>
+            <a href="#/listing/${l.id}">${esc(t('open_listing'))} →</a>
           </div>`);
         m.on('click', () => highlightSide(l.id));
         markers.set(l.id, m);
@@ -74,7 +74,7 @@ async function viewMap() {
       const lim = MAP_RADIUS[rad];
       const inR = items.filter(l => l.lat != null && l.lng != null && distMeters(center, l) <= lim);
       addMarkers(inR); renderSide(inR);
-      if (!inR.length) toast('No houses within ' + rad + ' km of this spot', true);
+      if (!inR.length) toast(t('no_houses_rad').replace('{r}', rad), true);
     };
     v.querySelectorAll('#map-rad .chip').forEach(c => c.onclick = () => {
       v.querySelectorAll('#map-rad .chip').forEach(x => x.classList.remove('on'));
@@ -97,7 +97,7 @@ async function viewMap() {
   }
 
   function showOnMap(l) {
-    if (l.lat == null || l.lng == null) { toast('This house is not pinned yet — ask the landlord in chat', true); return; }
+    if (l.lat == null || l.lng == null) { toast(t('not_pinned_yet'), true); return; }
     if (!M) return;
     M.setView(l.lat, l.lng, 18, true);
     const m = markers.get(l.id);
@@ -144,7 +144,7 @@ async function viewMap() {
     go.disabled = true;
     const hit = await searchPlaces(q);
     go.disabled = false;
-    if (!hit) { toast('Place not found — try a city, area or road name', true); return; }
+    if (!hit) { toast(t('place_nf'), true); return; }
     if (M) { M.setView(hit.lat, hit.lng, 15, true); center = { lat: hit.lat, lng: hit.lng }; applyFilter(); }
     v.querySelectorAll('#map-side .map-row.on').forEach(a => a.classList.remove('on'));
   };

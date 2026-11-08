@@ -49,7 +49,7 @@ async function route() {
     const m = hash.match(re);
     if (m) { buildNav(name); try { await fn(m); } catch (e) { console.error(e); } return; }
   }
-  document.getElementById('view').innerHTML = emptyBox('Page not found', 'The link may be wrong. Use the navigation below.');
+  document.getElementById('view').innerHTML = emptyBox(t('page_not_found'), t('page_not_found_d'));
   buildNav('');
 }
 
@@ -70,8 +70,8 @@ function buildNav(active) {
   const sn = document.getElementById('sidenav-links');
   const links = [...NAV.map(([href, key]) => [href, key, navLabel(key)]),
     ...(state.user && state.user.role === 'ADMIN' ? [['#/admin', 'gear', navLabel('admin'), 'adm']] : []),
-    ...(state.user && state.user.role === 'LANDLORD' ? [['#/mylistings', 'doc', 'My listings'], ['#/new', 'plus', 'Post a listing']] : []),
-    ...(state.user ? [['#/favorites', 'heart', 'Favourites']] : [])];
+    ...(state.user && state.user.role === 'LANDLORD' ? [['#/mylistings', 'doc', t('my_listings')], ['#/new', 'plus', t('post_listing')]] : []),
+    ...(state.user ? [['#/favorites', 'heart', t('favourites')]] : [])];
   sn.innerHTML = links.map(([href, key, label, badge]) =>
     `<a class="sl ${cur === key ? 'on' : ''}" href="${href}" data-nav="${key}">${ic(key === 'chats' ? 'chat' : key)}<span>${esc(label)}</span>${key === 'chats' ? '<span class="bn-badge" id="snav-dot" hidden></span>' : ''}${badge === 'adm' ? '<span class="bn-badge" data-adm-badge="total" hidden></span>' : ''}</a>`).join('');
 
@@ -79,24 +79,36 @@ function buildNav(active) {
   const foot = document.getElementById('sidenav-foot');
   if (state.user) {
     ta.innerHTML = `<a class="btn btn-outline btn-sm" href="#/profile">${esc((state.user.name || state.user.username).split(' ')[0])}</a>`;
-    foot.innerHTML = `Signed in as <b>${esc(state.user.username)}</b><br><button class="btn btn-ghost btn-sm" id="sn-out" style="margin-top:6px">${ic('out')} ${esc(t('signout'))}</button>`;
+    foot.innerHTML = `${esc(t('signed_in_as'))} <b>${esc(state.user.username)}</b><br><button class="btn btn-ghost btn-sm" id="sn-out" style="margin-top:6px">${ic('out')} ${esc(t('signout'))}</button>`;
   } else {
-    // language globe is STATIC in the topbar (right beside the theme button) — it
-    // used to be injected here and got crowded out by the two text pills on phones
+    // language globe is STATIC in the topbar (mobile) and in the side nav (desktop,
+    // #lang-prow right under the theme row) — both visible signed-in AND out
     ta.innerHTML = `<a class="btn btn-outline btn-sm" href="#/login">${esc(t('signin'))}</a><a class="btn btn-primary btn-sm" href="#/register">${esc(t('create_account'))}</a>`;
     // logged out: BOTH entry points — a returning user must never think they
     // have to register again (owner fix: create-account-only confused users)
-    foot.innerHTML = `<button class="btn btn-outline btn-sm btn-block" id="sn-lang" style="margin-bottom:6px">${ic('globe')} ${esc(t('pick_lang'))}</button>
-      <div style="display:flex;gap:8px;margin-top:6px"><a class="btn btn-outline btn-sm btn-block" href="#/login">${esc(t('signin'))}</a><a class="btn btn-green btn-sm btn-block" href="#/register">${esc(t('create_account'))}</a></div>`;
+    foot.innerHTML = `<div style="display:flex;gap:8px"><a class="btn btn-outline btn-sm btn-block" href="#/login">${esc(t('signin'))}</a><a class="btn btn-green btn-sm btn-block" href="#/register">${esc(t('create_account'))}</a></div>`;
   }
-  const slb = document.getElementById('sn-lang'); if (slb) slb.onclick = openLangPicker;
+  syncLangRow();
   const sout = document.getElementById('sn-out');
   if (sout) sout.onclick = async () => {
     await api('/logout', { method: 'POST' });
     token.set(null); state.user = null; buildNav();
-    location.hash = '#/home'; toast('Signed out');
+    location.hash = '#/home'; toast(t('signed_out'));
   };
   refreshUnread();
+}
+
+// keep the side-nav language row honest: globe row shows the CURRENT language's
+// own name (English / Kiswahili / Español…) and the topbar globe gets a tooltip.
+// Runs on every buildNav (boot, route change, sign in/out) so it is never stale.
+function syncLangRow() {
+  const lbl = document.getElementById('lang-prow-lbl');
+  if (lbl) {
+    const cur = currentLang() || 'en';
+    lbl.textContent = t('pick_lang') + ' · ' + (LANGS[cur] ? LANGS[cur].nat : 'English');
+  }
+  const lb = document.getElementById('lang-btn');
+  if (lb) lb.title = t('pick_lang');
 }
 
 async function refreshUnread() {
@@ -132,10 +144,13 @@ async function refreshUnread() {
   document.addEventListener('click', e => {
     if (e.target.closest('[data-theme-toggle]')) { e.preventDefault(); toggleTheme(); }
   });
-  // the language globe is static topbar markup (always visible beside the theme
-  // button, both signed-in and out) — bind it once here, never re-injected
+  // the language globe is static markup in BOTH shells — topbar (mobile, beside
+  // the theme button) and side nav (desktop, #lang-prow under the theme row) —
+  // always visible signed-in and out. Bind once here, never re-injected.
   const lbtn = document.getElementById('lang-btn');
   if (lbtn) lbtn.onclick = openLangPicker;
+  const lprow = document.getElementById('lang-prow');
+  if (lprow) lprow.onclick = openLangPicker;
   try {
     const [s, m, g] = await Promise.all([api('/settings'), token.get() ? api('/me') : Promise.resolve(null), api('/geo')]);
     if (s && s.ok && s.settings) state.settings = { ...state.settings, ...s.settings };

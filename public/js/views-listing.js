@@ -10,7 +10,7 @@ async function viewListing(id) {
 
   const r = await api('/listings/' + id);
   if (stale(gen)) return; // navigated away while loading
-  if (!r.ok) { v.innerHTML = emptyBox('Listing not found', r.error || 'It may have been removed.'); return; }
+  if (!r.ok) { v.innerHTML = emptyBox(t('listing_nf'), r.error || t('may_removed')); return; }
   const l = r.listing, photos = r.photos || [];
 
   if (!VIEWED.includes(id)) { VIEWED.push(id); localStorage.setItem('hl_viewed', JSON.stringify(VIEWED)); api('/listings/' + id + '/view', { method: 'POST' }); }
@@ -36,8 +36,8 @@ async function viewListing(id) {
   v.innerHTML = `
   <div class="detail-cols">
     <div class="detail-main">
-      ${r.isOwner && !boosted ? `<div class="notice notice-o" style="margin-bottom:10px">${ic('bolt')}<span><b>This is your listing.</b> Get seen first in ${esc(l.country || 'your country')} — <a href="#/boost/${l.id}" style="text-decoration:underline">Boost it free for ${BOOST.days} days</a>. Renters browsing ${esc(l.country || 'your country')} will see it on top.</span></div>` : ''}
-      ${r.isOwner && !verified ? `<div class="notice notice-g" style="margin-bottom:10px">${ic('shield')}<span>Earn the green <b>Verified landlord</b> badge and post up to 5 listings — <a href="#/profile" style="text-decoration:underline">verify in your Profile</a>.</span></div>` : ''}
+      ${r.isOwner && !boosted ? `<div class="notice notice-o" style="margin-bottom:10px">${ic('bolt')}<span><b>${esc(t('your_listing'))}</b> ${esc(t('boost_top_c').replace('{c}', l.country || t('your_country')))} — <a href="#/boost/${l.id}" style="text-decoration:underline">${esc(t('boost_free_n').replace('{n}', BOOST.days))}</a></span></div>` : ''}
+      ${r.isOwner && !verified ? `<div class="notice notice-g" style="margin-bottom:10px">${ic('shield')}<span>${esc(t('earn_badge'))} — <a href="#/profile" style="text-decoration:underline">${esc(t('verify_profile'))}</a></span></div>` : ''}
       ${photos.length ? `
       <div class="gallery">
         <span class="wm" style="z-index:2"></span>
@@ -53,75 +53,75 @@ async function viewListing(id) {
         <div class="dtitle">${esc(l.title)}</div>
         <div class="dmeta">${ic('pin')} ${esc(l.town || 'Worldwide')}${l.country ? ', ' + flagImg(l.country) + ' ' + esc(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''}${l.landmark ? ' · ' + esc(l.landmark) : ''}${dl ? ` · <b style="color:var(--pine-accent)">${esc(dl)}</b>` : ''}</div>
         <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
-          ${boosted ? `<span class="pill pill-o">${ic('bolt')}Boosted</span>` : ''}
-          ${verified ? `<span class="pill pill-g">${ic('shield')}Verified landlord</span>` : ''}
+          ${boosted ? `<span class="pill pill-o">${ic('bolt')}${esc(t('boosted_p'))}</span>` : ''}
+          ${verified ? `<span class="pill pill-g">${ic('shield')}${esc(t('verified_ll'))}</span>` : ''}
           <span class="pill ${vac.full ? 'pill-full' : 'pill-vac'}">${vac.full ? ic('x') : ic('check')}${esc(vac.label)}</span>
-          <span class="pill pill-x">${ic('eye')}${l.views} views</span>
+          <span class="pill pill-x">${ic('eye')}${l.views} ${esc(t('views'))}</span>
         </div>
         <div class="dacts">
-          <button class="btn btn-outline btn-sm" id="btn-fav">${ic('heart')} ${isFav ? 'Saved' : 'Save'}</button>
-          <button class="btn btn-outline btn-sm" id="btn-share">${ic('send')} Share</button>
-          <button class="btn btn-outline btn-sm" id="btn-report">${ic('flag')} Report</button>
+          <button class="btn btn-outline btn-sm" id="btn-fav">${ic('heart')} ${isFav ? esc(t('saved_b')) : esc(t('save_b'))}</button>
+          <button class="btn btn-outline btn-sm" id="btn-share">${ic('send')} ${esc(t('share_b'))}</button>
+          <button class="btn btn-outline btn-sm" id="btn-report">${ic('flag')} ${esc(t('report_l'))}</button>
         </div>
-        ${!r.isOwner ? `<div class="notice notice-r" style="margin-top:12px">${ic('shield')}<span><b>Never pay before viewing.</b> Visit the house and meet the landlord or caretaker in person before sending any deposit — cash or bank transfer.</span></div>` : ''}
-        ${vac.full && !r.isOwner ? `<div class="notice notice-o" style="margin-top:10px">${ic('x')}<span><b>All units here are occupied right now.</b> Save this listing or message the landlord — be first in line when a unit opens.</span></div>` : ''}
+        ${!r.isOwner ? `<div class="notice notice-r" style="margin-top:12px">${ic('shield')}<span><b>${esc(t('never_pay'))}</b> ${esc(t('never_pay_d'))}</span></div>` : ''}
+        ${vac.full && !r.isOwner ? `<div class="notice notice-o" style="margin-top:10px">${ic('x')}<span><b>${esc(t('all_occ_t'))}</b> ${esc(t('all_occ_d'))}</span></div>` : ''}
       </div>
 
-      <div class="sec-block"><h3>Key facts</h3><div class="dgrid">
-        <div class="dcell"><div class="k">Type</div><div class="v">${esc(l.ptype)}</div></div>
-        <div class="dcell"><div class="k">Units in compound</div><div class="v">${l.units}</div></div>
-        <div class="dcell"><div class="k">Vacant now</div><div class="v">${vac.full ? '0 — all occupied' : (vac.u > 1 ? vac.v + ' of ' + vac.u : 'Yes — this one')}</div></div>
-        <div class="dcell"><div class="k">Furnishing</div><div class="v">${esc(l.furnishing)}</div></div>
-        <div class="dcell"><div class="k">Floor</div><div class="v">${esc(floorLabel(l.floor))}</div></div>
-        <div class="dcell"><div class="k">Road access</div><div class="v">${esc(l.road)}</div></div>
-        <div class="dcell"><div class="k">Available from</div><div class="v">${fmtAvail(l.availableFrom)}</div></div>
+      <div class="sec-block"><h3>${esc(t('key_facts'))}</h3><div class="dgrid">
+        <div class="dcell"><div class="k">${esc(t('type_l'))}</div><div class="v">${esc(l.ptype)}</div></div>
+        <div class="dcell"><div class="k">${esc(t('units_l'))}</div><div class="v">${l.units}</div></div>
+        <div class="dcell"><div class="k">${esc(t('vacant_now'))}</div><div class="v">${vac.full ? t('vac_zero') : (vac.u > 1 ? vac.v + ' / ' + vac.u : t('vac_this'))}</div></div>
+        <div class="dcell"><div class="k">${esc(t('furnishing_l'))}</div><div class="v">${esc(l.furnishing)}</div></div>
+        <div class="dcell"><div class="k">${esc(t('floor_n'))}</div><div class="v">${esc(floorLabel(l.floor))}</div></div>
+        <div class="dcell"><div class="k">${esc(t('road_l'))}</div><div class="v">${esc(l.road)}</div></div>
+        <div class="dcell"><div class="k">${esc(t('avail_from'))}</div><div class="v">${fmtAvail(l.availableFrom)}</div></div>
       </div></div>
 
-      <div class="sec-block"><h3>Location</h3>
+      <div class="sec-block"><h3>${esc(t('location_t'))}</h3>
         ${coords ? `
         <div id="lmap" style="height:300px"></div>
-        <p class="hint-t" style="margin-top:7px">Live Google Maps — every road, estate and shop is named. Tap <b>Satellite</b> (button on the map) to see the compound and gate clearly.</p>
+        <p class="hint-t" style="margin-top:7px">${esc(t('location_hint'))}</p>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-          <a class="btn btn-outline btn-sm" target="_blank" rel="noopener" href="${gmapsLink}">${ic('pin')} Open in Google Maps</a>
-          <a class="btn btn-outline btn-sm" target="_blank" rel="noopener" href="${dirLink}">${ic('send')} Directions</a>
-        </div>` : `<p class="hint-t">The landlord has not pinned this property on the map yet. Ask for directions in the chat.</p>`}
+          <a class="btn btn-outline btn-sm" target="_blank" rel="noopener" href="${gmapsLink}">${ic('pin')} ${esc(t('open_gmaps'))}</a>
+          <a class="btn btn-outline btn-sm" target="_blank" rel="noopener" href="${dirLink}">${ic('send')} ${esc(t('directions'))}</a>
+        </div>` : `<p class="hint-t">${esc(t('no_pin_yet'))}</p>`}
       </div>
 
-      <div class="sec-block"><h3>Utilities</h3>
-        ${kv('Water', esc(l.water) + (l.waterCost && l.water !== 'Included in rent' ? ' · ' + esc(l.waterCost) : ''))}
-        ${l.water === 'Rationed' && l.waterSched ? kv('Water schedule', esc(l.waterSched)) : ''}
-        ${kv('Storage tank', y(l.waterTank))}
-        ${kv('Electricity', esc(l.elec) + (l.elecCost && !['Included in rent', 'Own meter', 'Prepaid'].includes(l.elec) ? ' · ' + esc(l.elecCost) : ''))}
-        ${kv('WiFi', esc(l.wifi) + (l.wifiCost && l.wifi === 'Available but paid separately' ? ' · ' + esc(l.wifiCost) : '') + (l.wifiProvider ? ' (' + esc(l.wifiProvider) + ')' : ''))}
-        ${kv('Garbage', esc(l.garbage))}
-        ${kv('Backup power', esc(l.backup))}
+      <div class="sec-block"><h3>${esc(t('utilities_t'))}</h3>
+        ${kv(t('water_l'), esc(l.water) + (l.waterCost && l.water !== 'Included in rent' ? ' · ' + esc(l.waterCost) : ''))}
+        ${l.water === 'Rationed' && l.waterSched ? kv(t('water_sched'), esc(l.waterSched)) : ''}
+        ${kv(t('tank_l'), y(l.waterTank))}
+        ${kv(t('electricity_l'), esc(l.elec) + (l.elecCost && !['Included in rent', 'Own meter', 'Prepaid'].includes(l.elec) ? ' · ' + esc(l.elecCost) : ''))}
+        ${kv(t('wifi_l'), esc(l.wifi) + (l.wifiCost && l.wifi === 'Available but paid separately' ? ' · ' + esc(l.wifiCost) : '') + (l.wifiProvider ? ' (' + esc(l.wifiProvider) + ')' : ''))}
+        ${kv(t('garbage_l'), esc(l.garbage))}
+        ${kv(t('backup_l'), esc(l.backup))}
       </div>
 
-      <div class="sec-block"><h3>Inside the unit</h3>
-        ${/^\d/.test(l.bath || '') ? kv('Bathrooms', esc(l.bath)) : ''}
-        ${(l.ensuite === 'Yes' || l.bath === 'Ensuite (own)') ? kv('Own bathroom', 'Yes — en-suite') : ''}
-        ${(l.kitchen === 'Yes' || l.kitchen === 'Own') ? kv('Own kitchen', 'Yes, inside the unit') : ''}
-        ${l.parking === 'Yes' ? kv('Parking', 'Available') : ''}
-        ${kv('Balcony', y(l.balcony))}
-        ${kv('Floor finish', y(l.tile))}
-        ${kv('Ceiling', y(l.ceiling))}
-        ${l.wardrobe === 'Yes' ? kv('Wardrobes', 'Built-in') : ''}
-        ${kv('Hot shower', y(l.hotShower))}
+      <div class="sec-block"><h3>${esc(t('inside_t'))}</h3>
+        ${/^\d/.test(l.bath || '') ? kv(t('bath_l'), esc(l.bath)) : ''}
+        ${(l.ensuite === 'Yes' || l.bath === 'Ensuite (own)') ? kv(t('own_bath'), esc(t('yes_ensuite'))) : ''}
+        ${(l.kitchen === 'Yes' || l.kitchen === 'Own') ? kv(t('own_kitchen'), esc(t('yes_inside_unit'))) : ''}
+        ${l.parking === 'Yes' ? kv(t('parking_l'), esc(t('available_b'))) : ''}
+        ${kv(t('balcony_l'), y(l.balcony))}
+        ${kv(t('floor_finish'), y(l.tile))}
+        ${kv(t('ceiling_l'), y(l.ceiling))}
+        ${l.wardrobe === 'Yes' ? kv(t('wardrobes'), esc(t('built_in'))) : ''}
+        ${kv(t('hot_shower'), y(l.hotShower))}
       </div>
 
-      <div class="sec-block"><h3>Security & tenants</h3>
+      <div class="sec-block"><h3>${esc(t('sec_t'))}</h3>
         <div class="chips" style="margin-bottom:10px">
-          ${(parseSecurity(l.security).length ? parseSecurity(l.security) : ['Not specified']).map(s => `<span class="chip" style="pointer-events:none">${esc(s)}</span>`).join('')}
+          ${(parseSecurity(l.security).length ? parseSecurity(l.security) : [t('not_specified')]).map(s => `<span class="chip" style="pointer-events:none">${esc(s)}</span>`).join('')}
         </div>
-        ${kv('Preferred tenants', esc(l.tenantPref || 'Anyone'))}
-        ${kv('Pets', y(l.pets))}
+        ${kv(t('pref_tenants'), esc(l.tenantPref || t('anyone')))}
+        ${kv(t('pets_l'), y(l.pets))}
       </div>
 
-      <div class="sec-block"><h3>Pricing & terms</h3>
-        ${kv('Rent', cur(l.rent, l.country) + ' / ' + esc((l.period || '').toLowerCase()))}
-        ${l.deposit ? kv('Deposit', cur(l.deposit, l.country)) : ''}
-        ${kv('Move-in fees', esc(l.fees || 'None'))}
-        ${kv('Negotiable', l.negotiable ? 'Yes' : 'No')}
+      <div class="sec-block"><h3>${esc(t('pricing_t'))}</h3>
+        ${kv(t('rent_l'), cur(l.rent, l.country) + ' / ' + esc((l.period || '').toLowerCase()))}
+        ${l.deposit ? kv(t('deposit_l'), cur(l.deposit, l.country)) : ''}
+        ${kv(t('move_in_fees'), esc(l.fees || t('none_b')))}
+        ${kv(t('negotiable'), l.negotiable ? t('yes_b') : t('no_b'))}
         ${l.terms ? `<p style="font-size:13.5px;color:var(--ink2);margin-top:8px">${esc(l.terms)}</p>` : ''}
       </div>
 
@@ -134,18 +134,18 @@ async function viewListing(id) {
           <div class="avatar ${verified ? '' : 'lv'}">${esc((l.ownerName || l.ownerUsername || '?')[0].toUpperCase())}</div>
           <div>
             <div class="nm">${esc(l.ownerName || l.ownerUsername)} ${verified ? ic('shield') : ''}</div>
-            <div class="sb">Landlord · joined ${fmtDate(l.ownerSince)}</div>
+            <div class="sb">${esc(t('role_landlord'))} · ${esc(t('joined'))} ${fmtDate(l.ownerSince)}</div>
           </div>
         </div>
-        ${verified ? '' : `<div class="notice notice-o" style="margin-top:11px;font-size:12.5px">${ic('flag')}<span>This landlord is not verified yet. Always view the room in person before paying anything.</span></div>`}
+        ${verified ? '' : `<div class="notice notice-o" style="margin-top:11px;font-size:12.5px">${ic('flag')}<span>${esc(t('not_verified_note'))}</span></div>`}
         <div class="contact-btns">
           <a class="btn btn-green ${canContact ? '' : 'need-auth'}" ${canContact ? `href="tel:${esc(contactNum)}"` : 'href="#/login"'}>
-            ${ic('phone')} Call</a>
+            ${ic('phone')} ${esc(t('call_b'))}</a>
           <a class="btn btn-primary ${canContact ? '' : 'need-auth'}" ${canContact ? `target="_blank" rel="noopener" href="${waLink(contactNum, 'Hi! I saw your listing “' + l.title + '” on HuntIn. Is it still available?')}"` : 'href="#/login"'}>
             ${ic('wa')} WhatsApp</a>
         </div>
-        <button class="btn btn-outline btn-block" id="btn-msg" style="margin-top:8px">${ic('chat')} Message in app</button>
-        <p class="hint-t" style="margin-top:10px">${ic('shield')} Never send a deposit before viewing the room in person.</p>
+        <button class="btn btn-outline btn-block" id="btn-msg" style="margin-top:8px">${ic('chat')} ${esc(t('msg_app'))}</button>
+        <p class="hint-t" style="margin-top:10px">${ic('shield')} ${esc(t('never_pay_side'))}</p>
       </div>
     </div>
   </div>`;
@@ -190,13 +190,13 @@ async function viewListing(id) {
   v.querySelector('#btn-fav').onclick = async () => {
     if (!state.user) { location.hash = '#/login'; return; }
     const res = await api('/favorites/' + l.id, { method: 'POST' });
-    if (res.ok) { v.querySelector('#btn-fav').innerHTML = `${ic('heart')} ${res.on ? 'Saved' : 'Save'}`; toast(res.on ? 'Saved to favourites' : 'Removed from favourites'); }
+    if (res.ok) { v.querySelector('#btn-fav').innerHTML = `${ic('heart')} ${res.on ? esc(t('saved_b')) : esc(t('save_b'))}`; toast(res.on ? t('saved_fav') : t('removed_fav')); }
     else toast(res.error, true);
   };
   v.querySelector('#btn-share').onclick = async () => {
     const url = location.href;
     if (navigator.share) { try { await navigator.share({ title: l.title, url }); } catch {} }
-    else { try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch {} }
+    else { try { await navigator.clipboard.writeText(url); toast(t('link_copied')); } catch {} }
   };
   v.querySelector('#btn-report').onclick = () => openReport(l.id);
   v.querySelector('#btn-msg').onclick = async () => {
@@ -208,7 +208,7 @@ async function viewListing(id) {
 
   // similar
   if (r.similar && r.similar.length) {
-    document.getElementById('similar-box').innerHTML = `<div class="sec"><div class="sec-h"><h2>Similar houses</h2></div>
+    document.getElementById('similar-box').innerHTML = `<div class="sec"><div class="sec-h"><h2>${esc(t('similar_h'))}</h2></div>
       <div class="grid">${r.similar.map(listingCard).join('')}</div></div>`;
   }
 }
@@ -216,18 +216,18 @@ async function viewListing(id) {
 async function viewFavorites() {
   const v = document.getElementById('view');
   const gen = routeGen;
-  v.innerHTML = `<div class="sec-h"><h2>Favourites</h2></div>${skeletonGrid(3)}`;
+  v.innerHTML = `<div class="sec-h"><h2>${esc(t('fav_t'))}</h2></div>${skeletonGrid(3)}`;
   const r = await api('/my/favorites');
   if (stale(gen)) return;
-  if (!r.ok) { v.innerHTML = emptyBox('Sign in required', 'Sign in to see your saved rooms.'); return; }
+  if (!r.ok) { v.innerHTML = emptyBox(t('signin_req'), t('signin_req_d')); return; }
   v.innerHTML = r.items.length
-    ? `<div class="sec-h"><h2>Favourites</h2></div><div class="grid">${r.items.map(listingCard).join('')}</div>`
-    : emptyBox('No favourites yet', 'Tap the Save button on any listing to keep it here.');
+    ? `<div class="sec-h"><h2>${esc(t('fav_t'))}</h2></div><div class="grid">${r.items.map(listingCard).join('')}</div>`
+    : emptyBox(t('no_favs_t'), t('no_favs_d'));
 }
 
 function viewPrivacy() {
   document.getElementById('view').innerHTML = `
-  <div class="sec-h"><h2>Privacy & safety</h2></div>
+  <div class="sec-h"><h2>${esc(t('privacy_safety'))}</h2></div>
   <div class="sec-block">
     <h3>What we store</h3>
     <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Your username, name, phone/WhatsApp number, role, and — for landlords — the verification documents you upload. Listing photos and details you post. Chat messages you send. Nothing else. No email, no tracking pixels.</p>

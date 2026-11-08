@@ -7,7 +7,7 @@ async function afterAuth(res, target) {
   token.set(res.token);
   state.user = res.user;
   buildNav();
-  toast('Welcome, ' + (res.user.name || res.user.username) + '!');
+  toast(t('welcome_w') + ', ' + (res.user.name || res.user.username) + '!');
   if (target) location.hash = target; else authRedirect();
   maybeStudentCaution();
 }
@@ -20,15 +20,17 @@ function viewAuth(tab) {
       <img class="auth-logo" src="/icons/icon-192.png" alt="HuntIn logo" width="60" height="60">
       <div class="auth-name">Hunt<b>In</b><span class="cc" data-cc></span></div>
       <p class="auth-tag">${isReg
-        ? 'Create a free account — find a house anywhere in the world or list your own.'
-        : 'Vacant houses &amp; apartments across the world — chat with landlords directly, never pay before viewing.'}</p>
+        ? esc(t('auth_reg_tag'))
+        : esc(t('auth_login_tag'))}</p>
     </div>
     <div class="seg" style="margin:16px 0">
-      <button id="t-login" class="${isReg ? '' : 'on'}">Sign in</button>
-      <button id="t-reg" class="${isReg ? 'on' : ''}">Create account</button>
+      <button id="t-login" class="${isReg ? '' : 'on'}">${esc(t('signin'))}</button>
+      <button id="t-reg" class="${isReg ? 'on' : ''}">${esc(t('create_account'))}</button>
     </div>
     <div id="auth-body">${isReg ? regForm() : loginForm()}</div>
-    <div class="auth-alt">${isReg ? 'Already have an account? <a href="#/login">Sign in</a>' : 'New to HuntIn? <a href="#/register">Create an account</a>'}</div>
+    <div class="auth-alt">${isReg
+      ? esc(t('have_acct')) + ' <a href="#/login">' + esc(t('signin')) + '</a>'
+      : esc(t('no_acct')) + ' <a href="#/register">' + esc(t('create_an_account')) + '</a>'}</div>
   </div></div>`;
 
   v.querySelector('#t-login').onclick = () => viewAuth('login');
@@ -38,10 +40,10 @@ function viewAuth(tab) {
 
 function loginForm() {
   return `
-    <label class="lbl">Username</label><input class="inp" id="li-u" autocomplete="username" placeholder="your username">
-    <label class="lbl">Password</label><input class="inp" id="li-p" type="password" autocomplete="current-password" placeholder="••••••••">
-    <button class="btn btn-green btn-block" id="li-go" style="margin-top:16px">Sign in</button>
-    <button class="btn btn-ghost btn-block" id="li-forgot" style="margin-top:6px;font-size:13px">Forgot password?</button>`;
+    <label class="lbl">${esc(t('username'))}</label><input class="inp" id="li-u" autocomplete="username" placeholder="${esc(t('username'))}">
+    <label class="lbl">${esc(t('password_l'))}</label><input class="inp" id="li-p" type="password" autocomplete="current-password" placeholder="••••••••">
+    <button class="btn btn-green btn-block" id="li-go" style="margin-top:16px">${esc(t('signin'))}</button>
+    <button class="btn btn-ghost btn-block" id="li-forgot" style="margin-top:6px;font-size:13px">${esc(t('forgot'))}</button>`;
 }
 
 function wireLogin(v) {
@@ -55,15 +57,15 @@ function wireLogin(v) {
   go.onclick = submit;
   v.querySelector('#li-p').addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
   v.querySelector('#li-forgot').onclick = () => {
-    modal(`<h3>Password hint</h3>
-      <p class="hint-t">Enter your username and we will show you the hint you saved when registering.</p>
-      <input class="inp" id="fg-u" placeholder="username" style="margin-top:10px">
+    modal(`<h3>${esc(t('forgot_t'))}</h3>
+      <p class="hint-t">${esc(t('forgot_d'))}</p>
+      <input class="inp" id="fg-u" placeholder="${esc(t('username'))}" style="margin-top:10px">
       <div id="fg-out"></div>
-      <button class="btn btn-green btn-block" style="margin-top:14px" id="fg-go">Show my hint</button>`,
+      <button class="btn btn-green btn-block" style="margin-top:14px" id="fg-go">${esc(t('show_hint'))}</button>`,
       m => m.querySelector('#fg-go').onclick = async () => {
         const r = await api('/hint/' + encodeURIComponent(m.querySelector('#fg-u').value.trim().toLowerCase()));
         m.querySelector('#fg-out').innerHTML = r.ok
-          ? `<div class="notice notice-g" style="margin-top:12px">${ic('shield')}<span>${r.hint ? 'Your hint: <b>' + esc(r.hint) + '</b>' : 'No account found with that username.'}</span></div>`
+          ? `<div class="notice notice-g" style="margin-top:12px">${ic('shield')}<span>${r.hint ? esc(t('your_hint')) + ' <b>' + esc(r.hint) + '</b>' : esc(t('no_acct_found'))}</span></div>`
           : `<div class="notice notice-o" style="margin-top:12px">${ic('flag')}<span>${esc(r.error)}</span></div>`;
       });
   };
@@ -73,15 +75,15 @@ function regForm() {
   return `
     <label class="lbl">${esc(t('i_am'))}</label>
     <div class="seg" id="rg-role"><button type="button" class="on" data-v="SEEKER">${esc(t('renter'))}</button><button type="button" data-v="LANDLORD">${esc(t('landlord_l'))}</button></div>
-    <label class="lbl">${esc(t('full_name'))}</label><input class="inp" id="rg-name" placeholder="e.g. John Smith">
-    <label class="lbl">${esc(t('whatsapp_l'))} <span style="font-weight:500">(include your country code)</span></label>
-    <input class="inp" id="rg-phone" inputmode="tel" placeholder="e.g. +254 712 345 678 or +44 7700 900123">
-    <label class="lbl">${esc(t('username_l'))}</label><input class="inp" id="rg-u" autocomplete="username" placeholder="3–20 letters, numbers or _">
+    <label class="lbl">${esc(t('full_name'))}</label><input class="inp" id="rg-name" placeholder="${esc(t('name_ph'))}">
+    <label class="lbl">${esc(t('whatsapp_l'))} <span style="font-weight:500">(${esc(t('phone_cc'))})</span></label>
+    <input class="inp" id="rg-phone" inputmode="tel" placeholder="${esc(t('phone_ph'))}">
+    <label class="lbl">${esc(t('username_l'))}</label><input class="inp" id="rg-u" autocomplete="username" placeholder="${esc(t('username_ph'))}">
     <label class="lbl">${esc(t('password_l'))}</label><input class="inp" id="rg-p" type="password" autocomplete="new-password" placeholder="${esc(t('pw_ph'))}">
     ${pwMeterHtml()}
-    <label class="lbl">${esc(t('confirm_l'))}</label><input class="inp" id="rg-p2" type="password" autocomplete="new-password" placeholder="Type the password again">
+    <label class="lbl">${esc(t('confirm_l'))}</label><input class="inp" id="rg-p2" type="password" autocomplete="new-password" placeholder="${esc(t('confirm_ph'))}">
     <label class="lbl">${esc(t('hint_l'))}</label>
-    <input class="inp" id="rg-hint" placeholder="e.g. my nickname + year I finished school">
+    <input class="inp" id="rg-hint" placeholder="${esc(t('hint_ph'))}">
     <p class="hint-t">${esc(t('hint_help'))}</p>
     <button class="btn btn-green btn-block" id="rg-go" style="margin-top:18px">${esc(t('create_account'))}</button>`;
 }
@@ -100,8 +102,8 @@ function wireReg(v) {
     if (pw.length < 8) { toast(t('pw_len') + ' — ' + t('pw_ph'), true); btn.disabled = false; return; }
     if (!s.case) { toast(t('pw_case'), true); btn.disabled = false; return; }
     if (!s.digit) { toast(t('pw_digit'), true); btn.disabled = false; return; }
-    if (s.common) { toast('That password is too common — pick a harder one', true); btn.disabled = false; return; }
-    if (pw !== v.querySelector('#rg-p2').value) { toast('Passwords do not match', true); btn.disabled = false; return; }
+    if (s.common) { toast(t('pw_common'), true); btn.disabled = false; return; }
+    if (pw !== v.querySelector('#rg-p2').value) { toast(t('pw_mismatch'), true); btn.disabled = false; return; }
     const res = await api('/register', {
       body: {
         role, name: v.querySelector('#rg-name').value, phone: v.querySelector('#rg-phone').value,
@@ -147,8 +149,8 @@ async function viewSetup() {
     if (pw.length < 8) { toast(t('pw_len') + ' — ' + t('pw_ph'), true); btn.disabled = false; return; }
     if (!s.case) { toast(t('pw_case'), true); btn.disabled = false; return; }
     if (!s.digit) { toast(t('pw_digit'), true); btn.disabled = false; return; }
-    if (s.common) { toast('That password is too common — pick a harder one', true); btn.disabled = false; return; }
-    if (pw !== v.querySelector('#su-p2').value) { toast('Passwords do not match', true); btn.disabled = false; return; }
+    if (s.common) { toast(t('pw_common'), true); btn.disabled = false; return; }
+    if (pw !== v.querySelector('#su-p2').value) { toast(t('pw_mismatch'), true); btn.disabled = false; return; }
     const res = await api('/setup', {
       body: {
         name: v.querySelector('#su-name').value, phone: v.querySelector('#su-phone').value,
@@ -174,68 +176,68 @@ async function viewProfile(edit) {
   const v = document.getElementById('view');
   const u = state.user;
   const isLandlord = u.role === 'LANDLORD';
-  const roleTxt = u.role === 'ADMIN' ? 'Admin' : isLandlord ? 'Landlord' : 'Renter';
+  const roleTxt = u.role === 'ADMIN' ? t('role_admin') : isLandlord ? t('role_landlord') : t('role_renter');
 
   // ---- read-only view ----
   if (!edit) {
-    v.innerHTML = `<div class="sec-h"><h2>My profile</h2></div>
+    v.innerHTML = `<div class="sec-h"><h2>${esc(t('my_profile'))}</h2></div>
     <div class="auth-card">
       <div class="owner-row">
         <div class="avatar">${esc((u.name || u.username)[0].toUpperCase())}</div>
         <div><div class="nm" style="font-weight:800;font-size:16px">${esc(u.name || u.username)}</div>
-        <div class="sb">@${esc(u.username)} · ${roleTxt} · joined ${fmtDate(u.createdAt)}</div></div>
+        <div class="sb">@${esc(u.username)} · ${esc(roleTxt)} · ${esc(t('joined'))} ${fmtDate(u.createdAt)}</div></div>
       </div>
       <div style="margin-top:14px">
-        <div class="kv"><span class="k">Full name</span><span class="v">${esc(u.name || '—')}</span></div>
-        <div class="kv"><span class="k">WhatsApp number</span><span class="v">${esc(u.phone || '—')}</span></div>
-        <div class="kv"><span class="k">Account</span><span class="v">${roleTxt}</span></div>
+        <div class="kv"><span class="k">${esc(t('full_name'))}</span><span class="v">${esc(u.name || '—')}</span></div>
+        <div class="kv"><span class="k">${esc(t('whatsapp_l'))}</span><span class="v">${esc(u.phone || '—')}</span></div>
+        <div class="kv"><span class="k">${esc(t('account_l'))}</span><span class="v">${esc(roleTxt)}</span></div>
       </div>
-      <button class="btn btn-green" id="pf-edit" style="margin-top:16px">${ic('edit')} Edit profile</button>
+      <button class="btn btn-green" id="pf-edit" style="margin-top:16px">${ic('edit')} ${esc(t('edit_profile'))}</button>
     </div>`;
     v.querySelector('#pf-edit').onclick = () => viewProfile(true);
   }
 
   // ---- edit form ----
   if (edit) {
-    v.innerHTML = `<div class="sec-h"><h2>Edit profile</h2></div>
+    v.innerHTML = `<div class="sec-h"><h2>${esc(t('edit_profile'))}</h2></div>
     <div class="auth-card">
-      <label class="lbl">Full name</label><input class="inp" id="pf-name" value="${esc(u.name)}">
-      <label class="lbl">WhatsApp number <span style="font-weight:500">(shown to the other side)</span></label>
+      <label class="lbl">${esc(t('full_name'))}</label><input class="inp" id="pf-name" value="${esc(u.name)}">
+      <label class="lbl">${esc(t('whatsapp_l'))} <span style="font-weight:500">(${esc(t('shown_other'))})</span></label>
       <input class="inp" id="pf-phone" inputmode="tel" value="${esc(u.phone)}">
       <div style="display:flex;gap:9px;margin-top:16px">
-        <button class="btn btn-outline" id="pf-cancel" style="flex:1">Cancel</button>
-        <button class="btn btn-green" id="pf-save" style="flex:1">Save changes</button>
+        <button class="btn btn-outline" id="pf-cancel" style="flex:1">${esc(t('cancel'))}</button>
+        <button class="btn btn-green" id="pf-save" style="flex:1">${esc(t('save_changes'))}</button>
       </div>
     </div>`;
     v.querySelector('#pf-cancel').onclick = () => viewProfile(false);
     v.querySelector('#pf-save').onclick = async () => {
       const body = { name: v.querySelector('#pf-name').value, phone: v.querySelector('#pf-phone').value };
       const res = await api('/me', { method: 'PUT', body });
-      if (res.ok) { state.user = res.user; buildNav(); toast('Profile saved'); viewProfile(false); }
+      if (res.ok) { state.user = res.user; buildNav(); toast(t('profile_saved')); viewProfile(false); }
       else toast(res.error, true);
     };
   }
 
   const admRow = u.role === 'ADMIN'
-    ? `<a class="prow" href="#/admin">${ic('gear')}<span class="mid"><b>Admin panel</b><small>Verifications, boosts, reports, users</small></span><span class="bn-badge" data-adm-badge="total" hidden></span>${ic('chev', 'chev')}</a>` : '';
+    ? `<a class="prow" href="#/admin">${ic('gear')}<span class="mid"><b>${esc(t('admin_panel'))}</b><small>${esc(t('admin_panel_d'))}</small></span><span class="bn-badge" data-adm-badge="total" hidden></span>${ic('chev', 'chev')}</a>` : '';
 
   const tools = document.createElement('div');
   tools.innerHTML = `
     ${isLandlord ? landlordVerifyCard(u) : ''}
 
-    <div class="plabel">${isLandlord ? 'Landlord tools' : 'Quick actions'}</div>
+    <div class="plabel">${esc(isLandlord ? t('landlord_tools') : t('quick_actions'))}</div>
     <div class="prowbox">
-      ${isLandlord ? prow('doc', 'My listings', 'Edit, mark taken, or boost your rooms', '#/mylistings')
-        + prow('plus', 'Post a new listing', 'Free plan: 2 listings · verified: 5', '#/new') : ''}
+      ${isLandlord ? prow('doc', t('my_listings'), t('my_listings_d'), '#/mylistings')
+        + prow('plus', t('post_new_l'), t('post_new_d'), '#/new') : ''}
       ${admRow}
-      ${prow('heart', 'Favourites', 'Rooms you saved for later', '#/favorites')}
-      ${prow('doc', 'Getting started guide', 'How it works — the guide from your first day', '#/welcome')}
-      ${prow('shield', 'Privacy & safety', 'How HuntIn handles your data', '#/privacy')}
+      ${prow('heart', t('favourites'), t('favourites_d'), '#/favorites')}
+      ${prow('doc', t('guide'), t('guide_d'), '#/welcome')}
+      ${prow('shield', t('privacy_safety'), t('privacy_d'), '#/privacy')}
     </div>
-    <div class="plabel">Settings</div>
+    <div class="plabel">${esc(t('settings'))}</div>
     <div class="prowbox">
-      <button class="prow" data-theme-toggle type="button">${ic('gear')}<span class="mid"><b>Theme <span class="theme-state">System</span></b><small>Light, dark, or follow this device's setting</small></span></button>
-      <button class="prow danger" id="pf-out">${ic('out')}<span class="mid"><b>Sign out</b><small>End this session on this device</small></span></button>
+      <button class="prow" data-theme-toggle type="button">${ic('gear')}<span class="mid"><b>${esc(t('theme'))} <span class="theme-state">System</span></b><small>${esc(t('theme_sub'))}</small></span></button>
+      <button class="prow danger" id="pf-out">${ic('out')}<span class="mid"><b>${esc(t('signout'))}</b><small>${esc(t('signout_d'))}</small></span></button>
     </div>`;
   v.appendChild(tools);
   applyTheme(currentTheme()); // sync the toggle labels/state (light / dark / system)
@@ -243,7 +245,7 @@ async function viewProfile(edit) {
   tools.querySelector('#pf-out').onclick = async () => {
     await api('/logout', { method: 'POST' });
     token.set(null); state.user = null; buildNav();
-    location.hash = '#/home'; toast('Signed out');
+    location.hash = '#/home'; toast(t('signed_out'));
   };
 
   if (state.user && state.user.role === 'ADMIN') refreshAdminCounts();
@@ -252,21 +254,21 @@ async function viewProfile(edit) {
 
 function landlordVerifyCard(u) {
   const st = u.verifyStatus;
-  const pill = st === 'APPROVED' ? '<span class="pill pill-g">Verified landlord — up to 5 listings</span>'
-    : st === 'PENDING' ? '<span class="pill pill-o">Verification under review</span>'
-    : st === 'REJECTED' ? `<span class="pill pill-r">Rejected${u.verifyNote ? ': ' + esc(u.verifyNote) : ''}</span>`
-    : '<span class="pill pill-x">Not verified — 2 listing limit</span>';
+  const pill = st === 'APPROVED' ? `<span class="pill pill-g">${esc(t('v_approved'))}</span>`
+    : st === 'PENDING' ? `<span class="pill pill-o">${esc(t('v_pending'))}</span>`
+    : st === 'REJECTED' ? `<span class="pill pill-r">${esc(t('v_rejected'))}${u.verifyNote ? ': ' + esc(u.verifyNote) : ''}</span>`
+    : `<span class="pill pill-x">${esc(t('v_none'))}</span>`;
   const needDocs = st === 'NONE' || st === 'REJECTED';
   return `<div class="auth-card" style="margin-top:14px" id="verify-card">
-    <h3 class="font-disp" style="font-size:16px">Landlord verification</h3>
+    <h3 class="font-disp" style="font-size:16px">${esc(t('verify_t'))}</h3>
     <div style="margin:8px 0 4px">${pill}</div>
-    <p class="hint-t" style="margin-bottom:8px">Verified landlords get a green badge on every listing and can post up to 5 listings. Upload a photo of your <b>government ID or passport</b> and a proof of ownership (title deed, utility bill, or a signed note from the property owner).</p>
+    <p class="hint-t" style="margin-bottom:8px">${esc(t('verify_docs'))}</p>
     ${needDocs ? `
       <div class="photo-grid" style="margin-top:10px">
-        <div class="photo-cell" id="doc-id">${docCell('ID photo')}</div>
-        <div class="photo-cell" id="doc-own">${docCell('Ownership doc')}</div>
+        <div class="photo-cell" id="doc-id">${docCell(t('id_photo'))}</div>
+        <div class="photo-cell" id="doc-own">${docCell(t('own_doc'))}</div>
       </div>
-      <button class="btn btn-green btn-block" id="vf-send" style="margin-top:14px">Submit for verification</button>` : ''}
+      <button class="btn btn-green btn-block" id="vf-send" style="margin-top:14px">${esc(t('submit_verify'))}</button>` : ''}
   </div>`;
 }
 
@@ -285,7 +287,7 @@ function wireVerifyCard(v) {
       inp.type = 'file'; inp.accept = 'image/*';
       inp.onchange = async () => {
         if (!inp.files[0]) return;
-        toast('Processing image…');
+        toast(t('processing'));
         try {
           docs[key === 'doc-id' ? 'docId' : 'docOwn'] = await compressTo(inp.files[0], 260, 1400, 0.78);
           cell.innerHTML = `<img src="${docs[key === 'doc-id' ? 'docId' : 'docOwn']}" style="width:100%;height:100%;object-fit:cover">`;
@@ -295,11 +297,11 @@ function wireVerifyCard(v) {
     };
   });
   card.querySelector('#vf-send').onclick = async () => {
-    if (!docs.docId || !docs.docOwn) { toast('Upload both photos first', true); return; }
+    if (!docs.docId || !docs.docOwn) { toast(t('upload_both'), true); return; }
     const btn = card.querySelector('#vf-send'); btn.disabled = true;
     const res = await api('/verify', { body: docs });
     btn.disabled = false;
-    if (res.ok) { toast('Submitted! The admin will review your documents.'); state.user.verifyStatus = 'PENDING'; viewProfile(); }
+    if (res.ok) { toast(t('verify_sent')); state.user.verifyStatus = 'PENDING'; viewProfile(); }
     else toast(res.error, true);
   };
 }

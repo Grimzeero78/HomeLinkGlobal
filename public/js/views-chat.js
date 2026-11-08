@@ -20,24 +20,23 @@ async function viewChats() {
   if (!state.user) { location.hash = '#/login'; return; }
   const v = document.getElementById('view');
   const gen = routeGen; // #view is never replaced — only its innerHTML — so guard with the route token
-  v.innerHTML = `<div class="sec-h"><h2>Chats</h2></div><div class="skel" style="height:74px"></div><div class="skel" style="height:74px"></div>`;
+  v.innerHTML = `<div class="sec-h"><h2>${esc(t('nav_chats'))}</h2></div><div class="skel" style="height:74px"></div><div class="skel" style="height:74px"></div>`;
   const load = async () => {
     const r = await api('/convs');
     if (stale(gen)) return;            // user navigated elsewhere — never paint over the new page
-    if (!r.ok) { v.innerHTML = emptyBox('Could not load chats', r.error); return; }
+    if (!r.ok) { v.innerHTML = emptyBox(t('chats_fail'), r.error); return; }
     if (!r.items.length) {
-      v.innerHTML = `<div class="sec-h"><h2>Chats</h2></div>` + emptyBox('No chats yet',
-        'Open any listing and tap "Message in app" to start talking to the landlord.');
+      v.innerHTML = `<div class="sec-h"><h2>${esc(t('nav_chats'))}</h2></div>` + emptyBox(t('no_chats_t'), t('no_chats_d'));
       return;
     }
-    v.innerHTML = `<div class="sec-h"><h2>Chats</h2></div>` + r.items.map(c => `
+    v.innerHTML = `<div class="sec-h"><h2>${esc(t('nav_chats'))}</h2></div>` + r.items.map(c => `
       <a class="conv-row" href="#/chat/${c.id}">
         <div class="conv-av avatar" style="border-radius:50%">${esc((c.otherName || '?')[0].toUpperCase())}
           ${c.unread ? `<span class="conv-un">${c.unread > 9 ? '9+' : c.unread}</span>` : ''}</div>
         <div class="conv-main">
-          <div class="conv-top"><span class="conv-name">${esc(c.otherName || 'User')}</span>
+          <div class="conv-top"><span class="conv-name">${esc(c.otherName || t('user_f'))}</span>
             <span class="conv-time">${timeAgo(c.lastAt)}</span></div>
-          <div class="conv-sub"><span class="conv-last">${esc(c.lastMsg || 'New conversation')}</span>
+          <div class="conv-sub"><span class="conv-last">${esc(c.lastMsg || t('new_conv'))}</span>
             <span class="conv-listing">${cur(c.lrent, c.lcountry)}/${perShort(c.lperiod)}</span></div>
         </div>
       </a>`).join('');
@@ -57,7 +56,7 @@ async function viewThread(id) {
 
   const info = await api('/convs/' + id);
   if (stale(gen)) return; // tapped Map/Chat while loading — don't repaint this thread over it
-  if (!info.ok) { v.innerHTML = emptyBox('Conversation not found', info.error); return; }
+  if (!info.ok) { v.innerHTML = emptyBox(t('conv_nf'), info.error); return; }
   const { listing, other } = info;
   const me = state.user.id;
   const iAmLandlord = state.user.role === 'LANDLORD';
@@ -82,15 +81,15 @@ async function viewThread(id) {
       <div class="thread-msgs" id="th-msgs"></div>
       <div class="qr-row" id="th-qr">${quickReplies}</div>
       <div class="edit-bar" id="th-editbar" hidden>
-        <span style="flex:1">${ic('edit')} Editing message</span>
-        <button type="button" class="edit-x" id="th-editcancel">${ic('x')} Cancel</button>
+        <span style="flex:1">${ic('edit')} ${esc(t('editing_msg'))}</span>
+        <button type="button" class="edit-x" id="th-editcancel">${ic('x')} ${esc(t('cancel'))}</button>
       </div>
       <div class="thread-bar">
-        <input class="inp" id="th-inp" placeholder="Type a message…" autocomplete="off">
+        <input class="inp" id="th-inp" placeholder="${esc(t('type_msg'))}" autocomplete="off">
         <button class="btn btn-green" id="th-send" style="flex:none">${ic('send')}</button>
       </div>
     </div>
-    <p class="hint-t" style="margin-top:8px">${ic('shield')} Agree on a viewing first. Never send money before you have seen the room.</p>`;
+    <p class="hint-t" style="margin-top:8px">${ic('shield')} ${esc(t('chat_safety'))}</p>`;
 
   v.querySelector('#th-back').onclick = () => { location.hash = '#/chats'; };
   v.querySelector('#th-report').onclick = () => openReport(info.listing.id || info.conv.listingId);
@@ -107,12 +106,12 @@ async function viewThread(id) {
     const mine = m.senderId === me;
     if (m.deleted) {
       return `<div class="bub ${mine ? 'me' : ''} bub-del" data-mid="${m.id}" data-ts="${m.createdAt}">
-        ${ic('x')}<i>${mine ? 'You deleted this message' : 'This message was deleted'}</i>
+        ${ic('x')}<i>${mine ? esc(t('you_deleted')) : esc(t('msg_deleted'))}</i>
         <span class="bub-time">${timeStr(m.createdAt)}</span></div>`;
     }
     // WhatsApp-style ticks: ✓ sent, ✓✓ read (blue) — driven by readAt from the server
     const tick = mine ? `<span class="bub-tick${m.readAt ? ' rd' : ''}">${m.readAt ? '✓✓' : '✓'}</span>` : '';
-    return `<div class="bub ${mine ? 'me' : ''}" data-mid="${m.id}" data-ts="${m.createdAt}" data-text="${esc(m.text)}">${esc(m.text)}${m.edited ? '<span class="bub-ed">edited</span>' : ''}<span class="bub-time">${timeStr(m.createdAt)}${tick}</span></div>`;
+    return `<div class="bub ${mine ? 'me' : ''}" data-mid="${m.id}" data-ts="${m.createdAt}" data-text="${esc(m.text)}">${esc(m.text)}${m.edited ? `<span class="bub-ed">${esc(t('edited'))}</span>` : ''}<span class="bub-time">${timeStr(m.createdAt)}${tick}</span></div>`;
   }
 
   // replace EVERY bubble for this message id (there can be more than one after races) —
@@ -141,11 +140,11 @@ async function viewThread(id) {
     const fresh = Date.now() - (+bub.dataset.ts) < 15 * 60_000;
     const item = (icon, label, act, danger) =>
       `<button type="button" class="bact ${danger ? 'bact-d' : ''}" data-act="${act}">${ic(icon)} ${label}</button>`;
-    const acts = [item('doc', 'Copy', 'copy')];
-    if (mine && fresh) acts.push(item('edit', 'Edit', 'edit'));
-    acts.push(item('eye', 'Delete for me', 'delme'));
-    if (mine) acts.push(item('trash', 'Delete for everyone', 'delall', true));
-    modal(`<h3 style="font-size:15px;margin-bottom:10px">Message actions</h3>
+    const acts = [item('doc', t('copy'), 'copy')];
+    if (mine && fresh) acts.push(item('edit', t('edit'), 'edit'));
+    acts.push(item('eye', t('del_me'), 'delme'));
+    if (mine) acts.push(item('trash', t('del_all'), 'delall', true));
+    modal(`<h3 style="font-size:15px;margin-bottom:10px">${esc(t('msg_actions'))}</h3>
       <div class="bubble-text-prev">${esc(bub.dataset.text || '')}</div>
       <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">${acts.join('')}</div>`,
       m => {
@@ -155,19 +154,19 @@ async function viewThread(id) {
           if (act === 'copy') copyText(bub.dataset.text || '');
           else if (act === 'edit') startEdit(bub);
           else if (act === 'delme') deleteForMe(mid);
-          else if (act === 'delall') confirmDlg('Delete for everyone?',
-            'This message will be removed for both of you. This cannot be undone.',
-            'Delete', () => deleteForAll(mid, +bub.dataset.ts), true);
+          else if (act === 'delall') confirmDlg(t('del_all_q'),
+            t('del_all_d'),
+            t('del'), () => deleteForAll(mid, +bub.dataset.ts), true);
         });
       });
   }
 
-  async function copyText(t) {
-    try { await navigator.clipboard.writeText(t); toast('Copied to clipboard'); }
+  async function copyText(txt) {
+    try { await navigator.clipboard.writeText(txt); toast(t('copied_clip')); }
     catch (e) {
       const ta = document.createElement('textarea');
-      ta.value = t; document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); toast('Copied to clipboard'); } catch (e2) { toast('Could not copy', true); }
+      ta.value = txt; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast(t('copied_clip')); } catch (e2) { toast(t('could_not_copy'), true); }
       ta.remove();
     }
   }

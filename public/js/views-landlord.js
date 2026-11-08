@@ -3,19 +3,19 @@ async function viewMyListings() {
   if (!state.user) { location.hash = '#/login'; return; }
   const v = document.getElementById('view');
   const gen = routeGen;
-  v.innerHTML = `<div class="sec-h"><h2>My listings</h2></div>${skeletonGrid(2)}
-    <a class="btn btn-green btn-block" href="#/new" style="margin-top:14px">${ic('plus')} Post a new listing</a>`;
+  v.innerHTML = `<div class="sec-h"><h2>${esc(t('my_listings'))}</h2></div>${skeletonGrid(2)}
+    <a class="btn btn-green btn-block" href="#/new" style="margin-top:14px">${ic('plus')} ${esc(t('post_new_l'))}</a>`;
   const r = await api('/my/listings');
   if (stale(gen)) return; // navigated away while loading
-  if (!r.ok) { v.innerHTML = emptyBox('Sign in required', r.error); return; }
+  if (!r.ok) { v.innerHTML = emptyBox(t('signin_req'), r.error); return; }
   const items = r.items;
   const boosted = l => l.boostedUntil && l.boostedUntil > Date.now();
 
-  v.innerHTML = `<div class="sec-h"><h2>My listings</h2><a href="#/new">${ic('plus')} New</a></div>
+  v.innerHTML = `<div class="sec-h"><h2>${esc(t('my_listings'))}</h2><a href="#/new">${ic('plus')} ${esc(t('new_b'))}</a></div>
     <div class="notice notice-g" style="margin-bottom:10px">${ic('shield')}<span>${state.user.verifyStatus === 'APPROVED'
-      ? 'Verified account: up to 5 listings.'
-      : 'Free plan: 2 listings. Get verified in your Profile to post up to 5.'}</span></div>
-    <div class="notice notice-o" style="margin-bottom:14px">${ic('bolt')}<span><b>Boost gets you seen:</b> free during launch — one tap pins a listing at the top of results <b>in its country</b> for ${BOOST.days} days — renters browsing that country see it first. Tap <b>Boost</b> on any listing below.</span></div>
+      ? esc(t('ver_ok'))
+      : esc(t('free_plan2'))}</span></div>
+    <div class="notice notice-o" style="margin-bottom:14px">${ic('bolt')}<span><b>${esc(t('boost_seen'))}</b> ${esc(t('boost_seen_d').replace('{n}', BOOST.days))}</span></div>
     ${items.length ? items.map(l => {
       const vac = vacInfo(l);
       return `
@@ -27,45 +27,45 @@ async function viewMyListings() {
             </div>
             <div style="min-width:0">
               <div class="row-title">${esc(l.title)}</div>
-              <div class="row-sub">${cur(l.rent, l.country)}/${perShort(l.period)} · ${esc(l.town || '')}${l.country ? ' · ' + flagImg(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''} · ${l.views} views</div>
+              <div class="row-sub">${cur(l.rent, l.country)}/${perShort(l.period)} · ${esc(l.town || '')}${l.country ? ' · ' + flagImg(l.country) : ''}${l.area ? ' · ' + esc(l.area) : ''} · ${l.views} ${esc(t('views'))}</div>
               <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
                 <span class="pill ${vac.full ? 'pill-full' : 'pill-vac'}">${vac.full ? ic('x') : ic('check')}${esc(vac.label)}</span>
-                ${boosted(l) ? `<span class="pill pill-o">${ic('bolt')}Boosted till ${fmtDate(l.boostedUntil)}</span>` : ''}
+                ${boosted(l) ? `<span class="pill pill-o">${ic('bolt')}${esc(t('boosted_till').replace('{d}', fmtDate(l.boostedUntil)))}</span>` : ''}
               </div>
             </div>
           </div>
         </div>
         <div class="row-acts">
-          <a class="btn btn-outline btn-sm" href="#/listing/${l.id}">${ic('eye')} View</a>
-          <a class="btn btn-outline btn-sm" href="#/edit/${l.id}">${ic('edit')} Edit</a>
-          <a class="btn btn-primary btn-sm" href="#/boost/${l.id}">${ic('bolt')} ${boosted(l) ? 'Boost again' : 'Boost'}</a>
+          <a class="btn btn-outline btn-sm" href="#/listing/${l.id}">${ic('eye')} ${esc(t('view_b'))}</a>
+          <a class="btn btn-outline btn-sm" href="#/edit/${l.id}">${ic('edit')} ${esc(t('edit'))}</a>
+          <a class="btn btn-primary btn-sm" href="#/boost/${l.id}">${ic('bolt')} ${boosted(l) ? esc(t('boost_again')) : esc(t('boost_b'))}</a>
           <button class="btn btn-danger btn-sm" data-act="del" data-id="${l.id}">${ic('trash')}</button>
         </div>
         <div class="vac-row" style="margin-top:9px;padding-top:9px;border-top:1px dashed var(--line)">
-          <span style="font-size:12px;font-weight:700;color:var(--ink3)">VACANCY</span>
-          <button class="btn btn-outline btn-sm" data-vac="${l.id}:${Math.max(0, vac.v - 1)}" ${vac.v <= 0 ? 'disabled' : ''} aria-label="Mark one unit taken">−1</button>
-          <span class="vac-lab">${vac.full ? `<b>Full</b> — all ${vac.u} occupied` : `<b>${vac.v}</b> of ${vac.u} vacant`}</span>
-          <button class="btn btn-outline btn-sm" data-vac="${l.id}:${Math.min(vac.u, vac.v + 1)}" ${vac.v >= vac.u ? 'disabled' : ''} aria-label="Mark one unit vacant">+1</button>
+          <span style="font-size:12px;font-weight:700;color:var(--ink3)">${esc(t('vacancy'))}</span>
+          <button class="btn btn-outline btn-sm" data-vac="${l.id}:${Math.max(0, vac.v - 1)}" ${vac.v <= 0 ? 'disabled' : ''} aria-label="-1">−1</button>
+          <span class="vac-lab">${vac.full ? `<b>${esc(t('full_w'))}</b> — ${esc(t('all_occ_n').replace('{u}', vac.u))}` : `<b>${vac.v}</b> ${esc(t('of_vacant').replace('{u}', vac.u))}`}</span>
+          <button class="btn btn-outline btn-sm" data-vac="${l.id}:${Math.min(vac.u, vac.v + 1)}" ${vac.v >= vac.u ? 'disabled' : ''} aria-label="+1">+1</button>
           ${vac.full
-            ? `<button class="btn btn-outline btn-sm" data-vac="${l.id}:${vac.u}">Reopen all</button>`
-            : `<button class="btn btn-outline btn-sm" data-vac="${l.id}:0">All taken</button>`}
+            ? `<button class="btn btn-outline btn-sm" data-vac="${l.id}:${vac.u}">${esc(t('reopen_all'))}</button>`
+            : `<button class="btn btn-outline btn-sm" data-vac="${l.id}:0">${esc(t('all_taken'))}</button>`}
         </div>
       </div>`;
     }).join('')
-    : emptyBox('No listings yet', 'Post your first vacant room — it takes about 2 minutes.')}
-    <a class="btn btn-green btn-block" href="#/new" style="margin-top:14px">${ic('plus')} Post a new listing</a>`;
+    : emptyBox(t('no_list_y'), t('no_list_d'))}
+    <a class="btn btn-green btn-block" href="#/new" style="margin-top:14px">${ic('plus')} ${esc(t('post_new_l'))}</a>`;
 
   // vacancy stepper — every tap saves instantly so the count renters see is always true
   v.querySelectorAll('[data-vac]').forEach(b => b.onclick = async () => {
     const i = b.dataset.vac.indexOf(':');
     const id = b.dataset.vac.slice(0, i), nv = parseInt(b.dataset.vac.slice(i + 1), 10);
     const res = await api('/listings/' + id + '/status', { body: { vacant: nv } });
-    if (res.ok) { toast(res.unitsVacant > 0 ? 'Saved — ' + res.unitsVacant + ' vacant' : 'Saved — all occupied'); viewMyListings(); } else toast(res.error, true);
+    if (res.ok) { toast(res.unitsVacant > 0 ? t('saved_vac').replace('{n}', res.unitsVacant) : t('saved_full')); viewMyListings(); } else toast(res.error, true);
   });
   v.querySelectorAll('[data-act="del"]').forEach(b => b.onclick = () =>
-    confirmDlg('Delete this listing?', 'It will be removed from HuntIn. You cannot undo this.', 'Delete', async () => {
+    confirmDlg(t('del_listing_q'), t('del_listing_d'), t('del'), async () => {
       const res = await api('/listings/' + b.dataset.id, { method: 'DELETE' });
-      if (res.ok) { toast('Listing deleted'); viewMyListings(); } else toast(res.error, true);
+      if (res.ok) { toast(t('listing_deleted')); viewMyListings(); } else toast(res.error, true);
     }, true));
 }
 
