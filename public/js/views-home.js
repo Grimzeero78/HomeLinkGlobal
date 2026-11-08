@@ -89,13 +89,21 @@ async function viewHome() {
   else bEl.innerHTML = '';
 
   if (pos) {
+    // RADIUS rule (owner: "check person location and get houses within 7 km — if
+    // not, nothing"): a Kenya renter must NEVER see an India home under "near you"
+    // just because it is the only pin on the map. Only listings inside the radius
+    // show; when none are close enough the section says so instead of reaching
+    // across the planet. (GPS is the renter's own shared position — no permission,
+    // no section.)
+    const R = 7; // km — owner's radius
     const withD = items.filter(l => l.lat != null && l.lng != null)
-      .map(l => ({ l, d: distMeters(pos, l) })).sort((a, b) => a.d - b.d).slice(0, 8);
-    nearEl.innerHTML = `<div class="sec-h"><h2>${ic('pin')} ${esc(t('near_you'))}</h2><a href="#/map">${esc(t('open_map'))} →</a></div>`
+      .map(l => ({ l, d: distMeters(pos, l) })).filter(x => x.d <= R * 1000)
+      .sort((a, b) => a.d - b.d).slice(0, 8);
+    nearEl.innerHTML = `<div class="sec-h"><h2>${ic('pin')} ${esc(t('near_km_t', { r: R }))}</h2><a href="#/map">${esc(t('open_map'))} →</a></div>`
       + (withD.length ? `<div class="grid">${withD.map(x => listingCard(x.l)).join('')}</div>`
-        : `<div class="empty">${ic('pin')}<h3>${esc(t('nothing_m'))}</h3><p>${esc(t('around_you_d'))}</p></div>`);
+        : `<div class="empty">${ic('pin')}<h3>${esc(t('near_km_empty', { r: R }))}</h3><p>${esc(t('near_km_d'))}</p></div>`);
   } else if (myTown) {
-    const inTown = items.filter(l => l.town === myTown).slice(0, 8);
+    const inTown = items.filter(l => l.town === myTown && (!myC || l.country === myC)).slice(0, 8);
     nearEl.innerHTML = `<div class="sec-h"><h2>${esc(myTown)}</h2><a href="#/search">${esc(t('see_all'))} →</a></div>`
       + (inTown.length ? `<div class="grid">${inTown.map(listingCard).join('')}</div>`
         : `<div class="empty">${ic('pin')}<h3>${esc(t('empty_country_t', { c: myTown }))}</h3><p>${esc(t('empty_country_d'))}</p></div>`);

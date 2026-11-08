@@ -54,6 +54,62 @@ function openCountryPicker(current, onPick) {
     });
 }
 // (CITIES is defined in world.js — loaded before this file)
+// ---- phone field: country code pre-set from geo + searchable dial picker ----
+// The visitor should never have to KNOW their dial code: it is pre-set from the
+// Cloudflare country detection (a Kenyan opens the form on +254), and every other
+// code is one searchable tap away — type 'Ken', 'KE' or '254' and tap the row.
+function phoneFieldHtml(pfx, ph) {
+  const def = dialOfCc(state.cc || '') ? countryOfCc(state.cc || '') : '';
+  return `<div class="phone-row">
+    <button type="button" class="dial-btn" id="${pfx}-dial" data-n="${esc(def)}" data-d="${esc(dialOfCc(state.cc || ''))}" aria-label="${esc(t('dial_t'))}">${def ? flagImg(def) : ic('globe')}<b class="dial-code">${def ? '+' + esc(dialOfCc(state.cc)) : t('dial_none')}</b>${ic('chev')}</button>
+    <input class="inp" id="${pfx}-phone" inputmode="tel" autocomplete="tel-national" placeholder="${esc(ph || t('phone_ph_local'))}">
+  </div>
+  <p class="hint-t">${esc(t('phone_auto'))}</p>`;
+}
+function paintDialBtn(btn, name) {
+  const row = CCBYN[name]; if (!row) return;
+  btn.dataset.n = row.n; btn.dataset.d = DIAL[row.cc] || '';
+  btn.innerHTML = `${flagImg(row.n)}<b class="dial-code">+${esc(DIAL[row.cc] || '')}</b>${ic('chev')}`;
+}
+// wires the picker button; returns the current dial prefix ('254' | '')
+function wireDialBtn(pfx) {
+  const btn = document.getElementById(pfx + '-dial'); if (!btn) return '';
+  btn.onclick = () => openDialPicker(btn.dataset.n, name => paintDialBtn(btn, name));
+  return btn.dataset.d || '';
+}
+// full phone value for submit: '+254712345678' (leading local 0 dropped, spaces stripped).
+// With no country chosen, the raw typed value passes through (server normalizes it).
+function phoneValue(pfx) {
+  const inp = document.getElementById(pfx + '-phone'); if (!inp) return '';
+  const btn = document.getElementById(pfx + '-dial');
+  let v = inp.value.replace(/[\s().-]/g, '');
+  const d = btn && btn.dataset.d;
+  if (d) { v = v.replace(/^0+/, ''); return '+' + d + v.replace(/^\+/, ''); }
+  return v;
+}
+function openDialPicker(current, onPick) {
+  let q = '';
+  const rows = () => {
+    const dg = q.replace(/\D/g, ''); // digits typed (e.g. '254') — must be non-empty to filter by code
+    const hits = COUNTRIES.filter(c => { const d = DIAL[c.cc] || ''; return !q || c.n.toLowerCase().includes(q) || c.cc.toLowerCase().startsWith(q) || (dg && d.startsWith(dg)); });
+    if (!hits.length) return `<p class="hint-t" style="padding:16px;text-align:center">${esc(t('no_country').replace('{q}', q))}</p>`;
+    return hits.map(c => `<button type="button" class="cprow${current === c.n ? ' on' : ''}" data-n="${esc(c.n)}">
+      ${flagImg(c.n)}<b style="flex:1">${esc(c.n)}</b><small class="dial-code">+${esc(DIAL[c.cc] || '')}</small>${current === c.n ? ic('check') : ''}</button>`).join('');
+  };
+  const paint = m => {
+    m.querySelector('#cp-list').innerHTML = rows();
+    m.querySelectorAll('.cprow').forEach(b => b.onclick = () => { closeModal(); if (onPick) onPick(b.dataset.n); });
+  };
+  modal(`<h3>${esc(t('dial_t'))}</h3>
+    <input class="inp" id="cp-q" placeholder="${esc(t('dial_q'))}" style="margin:10px 0 12px" autocomplete="off">
+    <div id="cp-list" style="max-height:52vh;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)"></div>`,
+    m => {
+      paint(m);
+      const qi = m.querySelector('#cp-q');
+      qi.oninput = () => { q = qi.value.trim().toLowerCase(); paint(m); };
+      qi.focus();
+    });
+}
 // One planet, one site: the renter's own position (GPS) and the city they are
 // browsing replace the old campus/county concepts.
 const WORLD_CENTER = { lat: 20, lng: 5 }; // centres the whole planet in view
@@ -188,6 +244,7 @@ function ic(name, cls) {
     phone: '<path d="M5 3h4l1.5 5L8 9.7a13 13 0 0 0 6.3 6.3l1.7-2.5 5 1.5v4a2 2 0 0 1-2.2 2A17.9 17.9 0 0 1 3 5.2 2 2 0 0 1 5 3z"/>',
     camera: '<path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/>',
     eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+    'eye-off': '<path d="M3 3l18 18"/><path d="M10.6 5.8A9.8 9.8 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17.5 17.5 0 0 1-2.2 3.1M6.1 6.9A16.9 16.9 0 0 0 2.5 12S6 18.5 12 18.5a9.6 9.6 0 0 0 4.2-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
     flag: '<path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/>',
     check: '<path d="m4.5 12.5 5 5L19.5 7"/>',
     x: '<path d="M6 6l12 12M18 6 6 18"/>',
@@ -413,10 +470,12 @@ function pwScore(p) {
 function pwMeterHtml() {
   return `<div class="pw-meter" hidden>
     <div class="pw-bar"><i></i></div>
+    <div class="pw-needs">${esc(t('pw_needs'))}</div>
     <div class="pw-reqs">
       <span data-r="len">${ic('check')} ${esc(t('pw_len'))}</span>
       <span data-r="case">${ic('check')} ${esc(t('pw_case'))}</span>
       <span data-r="digit">${ic('check')} ${esc(t('pw_digit'))}</span>
+      <span data-r="common">${ic('check')} ${esc(t('pw_notcommon'))}</span>
     </div></div>`;
 }
 function wirePwMeter(input) {
@@ -427,11 +486,29 @@ function wirePwMeter(input) {
     const s = pwScore(input.value);
     meter.className = 'pw-meter ' + s.strength;
     meter.querySelectorAll('[data-r]').forEach(el => {
-      const on = s[el.dataset.r === 'case' ? 'case' : el.dataset.r];
-      el.classList.toggle('ok', on && el.dataset.r !== 'common');
-      el.classList.toggle('bad', !on && el.dataset.r !== 'common');
+      // the 'not common' chip is green when the password is NOT on the common list
+      const on = el.dataset.r === 'common' ? !s.common : s[el.dataset.r];
+      el.classList.toggle('ok', on);
+      el.classList.toggle('bad', !on);
     });
   });
+}
+// ---- eye toggle: lets the user see what they are typing in a password field ----
+function wireEye(input) {
+  if (!input || input.parentElement.querySelector('.pw-eye')) return;
+  const wrap = document.createElement('div'); wrap.className = 'pw-wrap';
+  input.before(wrap); wrap.append(input);
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'pw-eye'; btn.setAttribute('aria-label', t('pw_show')); btn.title = t('pw_show');
+  btn.innerHTML = ic('eye');
+  wrap.append(btn);
+  btn.onclick = () => {
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.innerHTML = show ? ic('eye-off') : ic('eye');
+    const lbl = show ? t('pw_hide') : t('pw_show');
+    btn.setAttribute('aria-label', lbl); btn.title = lbl;
+  };
 }
 
 function applyCC() {

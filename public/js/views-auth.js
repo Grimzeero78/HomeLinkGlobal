@@ -56,6 +56,7 @@ function wireLogin(v) {
   };
   go.onclick = submit;
   v.querySelector('#li-p').addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+  wireEye(v.querySelector('#li-p'));
   v.querySelector('#li-forgot').onclick = () => {
     modal(`<h3>${esc(t('forgot_t'))}</h3>
       <p class="hint-t">${esc(t('forgot_d'))}</p>
@@ -76,8 +77,8 @@ function regForm() {
     <label class="lbl">${esc(t('i_am'))}</label>
     <div class="seg" id="rg-role"><button type="button" class="on" data-v="SEEKER">${esc(t('renter'))}</button><button type="button" data-v="LANDLORD">${esc(t('landlord_l'))}</button></div>
     <label class="lbl">${esc(t('full_name'))}</label><input class="inp" id="rg-name" placeholder="${esc(t('name_ph'))}">
-    <label class="lbl">${esc(t('whatsapp_l'))} <span style="font-weight:500">(${esc(t('phone_cc'))})</span></label>
-    <input class="inp" id="rg-phone" inputmode="tel" placeholder="${esc(t('phone_ph'))}">
+    <label class="lbl">${esc(t('whatsapp_l'))}</label>
+    ${phoneFieldHtml('rg')}
     <label class="lbl">${esc(t('username_l'))}</label><input class="inp" id="rg-u" autocomplete="username" placeholder="${esc(t('username_ph'))}">
     <label class="lbl">${esc(t('password_l'))}</label><input class="inp" id="rg-p" type="password" autocomplete="new-password" placeholder="${esc(t('pw_ph'))}">
     ${pwMeterHtml()}
@@ -106,7 +107,7 @@ function wireReg(v) {
     if (pw !== v.querySelector('#rg-p2').value) { toast(t('pw_mismatch'), true); btn.disabled = false; return; }
     const res = await api('/register', {
       body: {
-        role, name: v.querySelector('#rg-name').value, phone: v.querySelector('#rg-phone').value,
+        role, name: v.querySelector('#rg-name').value, phone: phoneValue('rg'),
         username: v.querySelector('#rg-u').value, password: pw,
         confirm: v.querySelector('#rg-p2').value, hint: v.querySelector('#rg-hint').value,
       }
@@ -115,6 +116,8 @@ function wireReg(v) {
     afterAuth(res, '#/welcome');
   };
   const pin = v.querySelector('#rg-p'); if (pin) wirePwMeter(pin);
+  wireEye(v.querySelector('#rg-p')); wireEye(v.querySelector('#rg-p2'));
+  wireDialBtn('rg');
 }
 
 // ---------- first-run admin setup ----------
@@ -134,7 +137,7 @@ async function viewSetup() {
     <h1>${esc(t('setup_h1'))}</h1>
     <p class="auth-sub">${esc(t('setup_sub'))}</p>
     <label class="lbl">${esc(t('setup_name'))}</label><input class="inp" id="su-name" placeholder="${esc(t('setup_name_ph'))}">
-    <label class="lbl">${esc(t('whatsapp_l'))}</label><input class="inp" id="su-phone" inputmode="tel" placeholder="${esc(t('setup_phone_ph'))}">
+    <label class="lbl">${esc(t('whatsapp_l'))}</label>${phoneFieldHtml('su')}
     <label class="lbl">${esc(t('username'))}</label><input class="inp" id="su-u" placeholder="${esc(t('setup_user_ph'))}">
     <label class="lbl">${esc(t('password_l'))}</label><input class="inp" id="su-p" type="password" autocomplete="new-password" placeholder="${esc(t('pw_ph'))}">
     ${pwMeterHtml()}
@@ -153,7 +156,7 @@ async function viewSetup() {
     if (pw !== v.querySelector('#su-p2').value) { toast(t('pw_mismatch'), true); btn.disabled = false; return; }
     const res = await api('/setup', {
       body: {
-        name: v.querySelector('#su-name').value, phone: v.querySelector('#su-phone').value,
+        name: v.querySelector('#su-name').value, phone: phoneValue('su'),
         username: v.querySelector('#su-u').value, password: pw,
         confirm: v.querySelector('#su-p2').value, hint: v.querySelector('#su-hint').value,
       }
@@ -162,6 +165,8 @@ async function viewSetup() {
     afterAuth(res);
   };
   const spin = v.querySelector('#su-p'); if (spin) wirePwMeter(spin);
+  wireEye(v.querySelector('#su-p')); wireEye(v.querySelector('#su-p2'));
+  wireDialBtn('su');
 }
 
 // settings-style row (port of the prototype prow)

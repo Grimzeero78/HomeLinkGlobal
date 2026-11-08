@@ -511,6 +511,22 @@ html[data-theme="dark"] .badge-vac.open,html[data-theme="dark"] .pill-vac{color:
 .pw-reqs span svg{width:11px;height:11px}
 .pw-reqs span.ok{color:var(--green,#0e5a33);font-weight:600}
 .pw-reqs span.bad{color:var(--red,#c0392b)}
+.pw-needs{font-size:11.5px;font-weight:700;color:var(--ink2,#5b574e);margin-top:7px}
+/* phone field: [flag +254 v] [number] — dial code pre-set from geo, searchable */
+.phone-row{display:flex;gap:8px;align-items:stretch}
+.phone-row .inp{flex:1;min-width:0}
+.dial-btn{display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:1px solid var(--line,#e5e2da);border-radius:10px;background:var(--card,#fff);cursor:pointer;font:inherit;font-size:14px;color:var(--ink,#1c1b18);flex:0 0 auto}
+.dial-btn:hover{border-color:var(--pine,#0e5a33)}
+.dial-btn .fimg{width:21px;height:15px;border-radius:2px}
+.dial-btn .dial-code{font-weight:800;min-width:34px;text-align:center}
+.dial-btn svg{width:13px;height:13px;color:var(--ink3,#8a867c)}
+#cp-list .cprow .dial-code{font-weight:700;color:var(--ink2,#5b574e)}
+/* password eye toggle */
+.pw-wrap{position:relative}
+.pw-wrap .inp{width:100%;padding-right:42px}
+.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;cursor:pointer;color:var(--ink3,#8a867c);border-radius:8px}
+.pw-eye:hover{color:var(--ink,#1c1b18);background:var(--soft,#f2efe8)}
+.pw-eye svg{width:19px;height:19px}
 /* ---------- language picker rows already reuse .prow / .mini-tag ---------- */
 /* ---------- right-to-left languages (Arabic, Urdu, Persian) ---------- */
 [dir="rtl"] .bn-item,[dir="rtl"] .sl{flex-direction:row-reverse}

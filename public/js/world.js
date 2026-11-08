@@ -88,6 +88,44 @@ const CC_EXTRA = { PR:['Puerto Rico','es'], GI:['Gibraltar','en'], IM:['Isle of 
   RE:['Réunion','fr'], YT:['Mayotte','fr'], GP:['Guadeloupe','fr'], MQ:['Martinique','fr'], GF:['French Guiana','fr'],
   NC:['New Caledonia','fr'], PF:['French Polynesia','fr'], AW:['Aruba','nl'], CW:['Curaçao','nl'], SX:['Sint Maarten','en'] };
 
+// International dial codes (ITU E.164, no '+') for every country/territory above —
+// powers the phone field: the visitor's country code is pre-set automatically
+// (Cloudflare geo), and any other code is one searchable tap away.
+const DIAL = {
+  // Africa
+  DZ:'213', AO:'244', BJ:'229', BW:'267', BF:'226', BI:'257', CV:'238', CM:'237', CF:'236', TD:'235',
+  KM:'269', CD:'243', CG:'242', DJ:'253', EG:'20', GQ:'240', ER:'291', SZ:'268', ET:'251', GA:'241',
+  GM:'220', GH:'233', GN:'224', GW:'245', CI:'225', KE:'254', LS:'266', LR:'231', LY:'218', MG:'261',
+  MW:'265', ML:'223', MR:'222', MU:'230', MA:'212', MZ:'258', NA:'264', NE:'227', NG:'234', RW:'250',
+  ST:'239', SN:'221', SC:'248', SL:'232', SO:'252', ZA:'27', SS:'211', SD:'249', TZ:'255', TG:'228',
+  TN:'216', UG:'256', ZM:'260', ZW:'263',
+  // Middle East / Central Asia
+  AF:'93', AM:'374', AZ:'994', BH:'973', GE:'995', IR:'98', IQ:'964', IL:'972', JO:'962', KZ:'7',
+  KW:'965', KG:'996', LB:'961', OM:'968', PS:'970', QA:'974', SA:'966', SY:'963', TJ:'992', TR:'90',
+  TM:'993', AE:'971', UZ:'998', YE:'967',
+  // Europe
+  AL:'355', AD:'376', AT:'43', BY:'375', BE:'32', BA:'387', BG:'359', HR:'385', CY:'357', CZ:'420',
+  DK:'45', EE:'372', FI:'358', FR:'33', DE:'49', GR:'30', HU:'36', IS:'354', IE:'353', IT:'39',
+  XK:'383', LV:'371', LI:'423', LT:'370', LU:'352', MT:'356', MD:'373', MC:'377', ME:'382', NL:'31',
+  MK:'389', NO:'47', PL:'48', PT:'351', RO:'40', RU:'7', SM:'378', RS:'381', SK:'421', SI:'386',
+  ES:'34', SE:'46', CH:'41', UA:'380', GB:'44', VA:'39',
+  // Americas
+  AG:'1268', AR:'54', BS:'1242', BB:'1246', BZ:'501', BO:'591', BR:'55', CA:'1', CL:'56', CO:'57',
+  CR:'506', CU:'53', DM:'1767', DO:'1809', EC:'593', SV:'503', GD:'1473', GT:'502', GY:'592',
+  HT:'509', HN:'504', JM:'1876', MX:'52', NI:'505', PA:'507', PY:'595', PE:'51', KN:'1869',
+  LC:'1758', VC:'1784', SR:'597', TT:'1868', US:'1', UY:'598', VE:'58',
+  // Asia
+  BD:'880', BT:'975', BN:'673', KH:'855', CN:'86', HK:'852', IN:'91', ID:'62', JP:'81', LA:'856',
+  MO:'853', MY:'60', MV:'960', MN:'976', MM:'95', NP:'977', KP:'850', PK:'92', PH:'63', SG:'65',
+  KR:'82', LK:'94', TW:'886', TH:'66', VN:'84',
+  // Oceania
+  AU:'61', FJ:'679', NZ:'64', PG:'675', WS:'685', SB:'677', TO:'676', VU:'678',
+  // territories / micro-states Cloudflare may report
+  PR:'1787', GI:'350', IM:'44', JE:'44', GG:'44', FO:'298', GL:'299', BM:'1441', KY:'1345',
+  RE:'262', YT:'262', GP:'590', MQ:'596', GF:'594', NC:'687', PF:'689', AW:'297', CW:'599', SX:'1721',
+};
+function dialOfCc(cc) { return DIAL[cc] || ''; }
+
 const CBYCC = {};   // 'KE' -> 'Kenya'
 const CCBYN = {};   // 'Kenya' -> row
 for (const [n, cc, f, code, sym, lg] of WORLD) { CBYCC[cc] = n; CCBYN[n] = { n, cc, f, code, sym, lg, feat: FEAT_CC.includes(cc) }; }
