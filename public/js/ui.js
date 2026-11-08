@@ -1,5 +1,5 @@
 // HuntIn — shared UI helpers, constants, icons
-const TYPES = ['Single Room', 'Studio', '1 Bedroom', '2 Bedroom', '3 Bedroom', '4+ Bedroom', 'Apartment', 'House', 'Villa'];
+const TYPES = ['Single Room', 'Bedsitter', 'Studio', '1 Bedroom', '2 Bedroom', '3 Bedroom', '4+ Bedroom', 'Apartment', 'House', 'Villa'];
 // The world gazetteer (every country + major cities + currencies + languages) lives
 // in world.js — loaded before this file. Compatibility shims keep the rest of the
 // app reading the same names it always has.
@@ -495,7 +495,10 @@ function wirePwMeter(input) {
 }
 // ---- eye toggle: lets the user see what they are typing in a password field ----
 function wireEye(input) {
-  if (!input || input.parentElement.querySelector('.pw-eye')) return;
+  // guard on THIS input only — checking the parent would wrongly match a sibling
+  // password field's eye (register form has password + confirm side by side in
+  // the same form, so the confirm field never got its eye — owner bug report)
+  if (!input || input.closest('.pw-wrap')) return;
   const wrap = document.createElement('div'); wrap.className = 'pw-wrap';
   input.before(wrap); wrap.append(input);
   const btn = document.createElement('button');

@@ -183,6 +183,8 @@ const needsTxt = await p3.$eval('.pw-meter .pw-needs', e => e.textContent).catch
 ok('meter says the password needs 4 things', /4/.test(needsTxt), needsTxt);
 const eye = await p3.$('#rg-p + .pw-eye, .pw-wrap .pw-eye');
 ok('eye button present in the password field', !!eye);
+const eyeCount = await p3.$$eval('.pw-eye', els => els.length);
+ok('confirm-password field ALSO has its own eye (owner bug: it was missing)', eyeCount === 2, 'pw-eye buttons on register form: ' + eyeCount);
 if (eye) {
   const t0 = await p3.$eval('#rg-p', e => e.type);
   await p3.click('.pw-wrap .pw-eye');

@@ -64,7 +64,7 @@ async function viewCreate(id) {
       <input class="inp" data-k="town" list="city-list" placeholder="${esc(t('city_ph'))}" value="${esc(L.town == null ? '' : L.town)}">
       <datalist id="city-list">${CITIES.map(c => `<option value="${esc(c.n)}">${esc(c.c)}</option>`).join('')}</datalist>
       <p class="hint-t">${esc(t('boost_target_hint').replace('{c}', L.country || t('your_country')))}</p>
-      ${txt('units', t('units_l'), '6', 'number')}
+      ${txt('units', t('units_vac_l'), '6', 'number')}
       <p class="hint-t">${t('units_hint')}</p>
       ${sel('furnishing', t('furnishing_l'), FURN)}
       ${txt('floor', t('floor_l'), t('floor_ph'), 'number')}
