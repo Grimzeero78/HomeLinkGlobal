@@ -150,7 +150,15 @@ const STR = {
   v_anyone:'Anyone', v_family:'Family', v_singles_couples:'Singles / couples', v_working_professionals:'Working professionals',
   v_paved_tarmac:'Paved / tarmac', v_gravel_dirt:'Gravel / dirt', v_footpath_only:'Footpath only',
   v_guard:'Guard', v_gate_lock:'Gate lock', v_cctv:'CCTV',
-  v_available_now:'Available now', v_within_a_week:'Within a week', v_within_a_month:'Within a month', v_next_month:'Next month', v_pick_a_date:'Pick a date…'
+  v_available_now:'Available now', v_within_a_week:'Within a week', v_within_a_month:'Within a month', v_next_month:'Next month', v_pick_a_date:'Pick a date…',
+  hide_b:'Hide', show_b:'Show', hidden_pill:'Hidden — renters cannot see it',
+  hide_q:'Hide this listing?', hide_d:'Renters will not see it anywhere — browse, search, map or its link. It stays right here on this page and you can bring it back with Show.',
+  hidden_toast:'Listing hidden — only you can see it here', shown_toast:'Listing is live again — renters can see it',
+  del_forever:'Delete forever', del_forever_d:'Everything about it is wiped — the listing, its photos, its chats, favourites and boosts. There is no way back. If you only want it out of sight for a while, use Hide instead.',
+  del_gone:'Listing deleted for good',
+  vac_updating:'Updating vacancy…', net_fail:'Network problem — the vacancy was not saved. Try again.',
+  report_hidden_t:'Report sent — that listing has been hidden until the admin checks the reports.',
+  owner_hidden_t:'This listing is hidden.', owner_hidden_d:'Renters cannot see it anywhere. Show it again from'
 };
 // translations — key-per-language; missing keys fall back to English
 const I18N = {
@@ -337,6 +345,14 @@ sw:{
   qr5:'Ndiyo, inapatikana.', qr6:'Unapenda kuja kuitembelea lini?', qr7:'Kutembelea: Jumatatu–Jumamosi, 8 AM – 6 PM.',
   qr8:'Amana ni kodi ya mwezi mmoja.', geo_no_browser:'Kivinjari chako hakihimidi huduma ya eneo', loc_denied:'Ruhusa ya eneo imekataliwa — badala yake chagua mji wako hapa chini',
   no_country:'Hakuna nchi inayolingana na "{q}"', card_all_occ:'Vyumba vyote {u} vimekaliwa', card_occupied:'Kimekaliwa',
+  hide_b:'Ficha', show_b:'Onyesha', hidden_pill:'Imefichwa — wapangaji hawauoni',
+  hide_q:'Ufiche tangazo hili?', hide_d:'Hakuna mtumiaji auutaona popote — utafutaji, ramani au kiungo chake. Kitaendelea kuonekana hapa kwenye Orodha yangu na unaweza kulionyesha tena kwa Onyesha.',
+  hidden_toast:'Tangazo limefichwa — ni wewe tu unauona', shown_toast:'Tangazo lipo hai tena — wapangaji wanauona',
+  del_forever:'Futa kabisa', del_forever_d:'Kila kitu kinachohusiana nalo kitafutwa — tangazo, picha zake, mazungumzo yake, vipendwa na boosts. Hakuna kurejesha. Ukitaka kuliondoa machoni tu kwa muda, tumia Ficha badala yake.',
+  del_gone:'Tangazo limefutwa kabisa',
+  vac_updating:'Nasasisha upatikanaji…', net_fail:'Mtandao una shida — upatikanaji haujahifadhiwa. Jaribu tena.',
+  report_hidden_t:'Ripoti imetumwa — tangazo hilo limefichwa mpaka msimamizi aiangalie.',
+  owner_hidden_t:'Tangazo hili limefichwa.', owner_hidden_d:'Hakuna mtumiaji auutaona popote. Lioneshe tena kutoka',
   card_vac_of:'{v} kati ya {u} viko wazi', badge_all_occ:'VYOTE VIMEKALIWA', badge_vacant:'WAZI',
   badge_of:'kati ya {u}', ta_now:'sasa hivi', ta_m:'dakika {n} zilizopita',
   ta_h:'masaa {n} yaliyopita', ta_d:'siku {n} zilizopita', ta_away:'bado {d}',

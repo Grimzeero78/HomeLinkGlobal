@@ -307,7 +307,7 @@ function openReport(listingId) {
     m => m.querySelector('#rp-send').onclick = async () => {
       const res = await api('/listings/' + listingId + '/report', { body: { reason: m.querySelector('#rp-reason').value, note: m.querySelector('#rp-note').value } });
       closeModal();
-      toast(res.ok ? t('report_sent') : res.error, !res.ok);
+      toast(res.ok ? (res.autoHidden ? t('report_hidden_t') : t('report_sent')) : res.error, !res.ok);
     });
 }
 

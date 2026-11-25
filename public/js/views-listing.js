@@ -64,6 +64,7 @@ async function viewListing(id) {
           <button class="btn btn-outline btn-sm" id="btn-report">${ic('flag')} ${esc(t('report_l'))}</button>
         </div>
         ${!r.isOwner ? `<div class="notice notice-r" style="margin-top:12px">${ic('shield')}<span><b>${esc(t('never_pay'))}</b> ${esc(t('never_pay_d'))}</span></div>` : ''}
+        ${r.isOwner && l.hidden ? `<div class="notice notice-r" style="margin-top:12px">${ic('eye-off')}<span><b>${esc(t('owner_hidden_t'))}</b> ${esc(t('owner_hidden_d'))} <a href="#/mylistings" style="font-weight:700">${esc(t('my_listings'))}</a></span></div>` : ''}
         ${vac.full && !r.isOwner ? `<div class="notice notice-o" style="margin-top:10px">${ic('x')}<span><b>${esc(t('all_occ_t'))}</b> ${esc(t('all_occ_d'))}</span></div>` : ''}
       </div>
 

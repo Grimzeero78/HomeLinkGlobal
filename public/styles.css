@@ -560,3 +560,6 @@ html[data-theme="dark"] .badge-vac.open,html[data-theme="dark"] .pill-vac{color:
 .lrow .l-check{flex:none;display:inline-flex;color:var(--pine-accent)}
 .lrow .l-check svg{width:18px;height:18px}
 .lrow .mini-tag{flex:none;margin-left:2px}
+
+/* hidden listing pill (My Listings) — dashed so it reads as "temporarily out of sight" */
+.pill-muted{background:var(--soft);color:var(--ink3);border:1px dashed var(--line)}
